@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>환영합니다 - MTS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, #fafbfc 0%, #ffffff 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            width: 100%;
+            max-width: 480px;
+            animation: fadeInScale 0.6s ease;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Success Animation */
+        .success-icon-wrapper {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        :root {
+            --primary: #3182F6;
+            --primary-hover: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary: #1E40AF;
+            --accent: #60A5FA;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --text-primary: #191F28;
+            --text-secondary: #6B7684;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: checkmarkScale 0.8s ease 0.2s both;
+            box-shadow: 0 8px 24px rgba(49, 130, 246, 0.3);
+        }
+
+        @keyframes checkmarkScale {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .checkmark {
+            color: white;
+            font-size: 2.5rem;
+            animation: checkmarkDraw 0.4s ease 0.8s both;
+        }
+
+        @keyframes checkmarkDraw {
+            from {
+                opacity: 0;
+                transform: scale(0.5) rotate(-45deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* Card */
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            padding: 48px 32px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .success-subtitle {
+            font-size: 1.1rem;
+            color: #6B7684;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .welcome-message {
+            display: inline-block;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, rgba(219, 234, 254, 0.5) 100%);
+            border-radius: 12px;
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: 24px;
+            margin-bottom: 32px;
+            border-left: 4px solid var(--primary);
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(49, 130, 246, 0.1);
+        }
+
+        /* Next Steps */
+        .next-steps {
+            text-align: left;
+            margin: 32px 0;
+            padding: 24px;
+            background: #f7f8fa;
+            border-radius: 12px;
+        }
+
+        .next-steps-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #191F28;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e8eb;
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e8eb;
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .step-item.completed .step-checkbox {
+            background: #48BB78;
+            border-color: #48BB78;
+        }
+
+        .step-item.completed .step-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 0.75rem;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #191F28;
+            margin-bottom: 4px;
+        }
+
+        .step-description {
+            font-size: 0.875rem;
+            color: #6B7684;
+        }
+
+        .step-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-left: auto;
+        }
+
+        /* Buttons */
+        .btn-primary-custom {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary-custom:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(49, 130, 246, 0.4);
+            color: white;
+        }
+
+        .btn-secondary-custom {
+            width: 100%;
+            padding: 12px 24px;
+            background: white;
+            color: #6B7684;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 12px;
+        }
+
+        .btn-secondary-custom:hover {
+            background: #f7f8fa;
+            color: #191F28;
+        }
+
+        /* Action Cards */
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .action-card {
+            padding: 20px;
+            background: white;
+            border: 1px solid #e5e8eb;
+            border-radius: 12px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            border-color: #191F28;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            background: #f7f8fa;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .action-title {
+            font-weight: 600;
+            color: #191F28;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .action-description {
+            font-size: 0.75rem;
+            color: #6B7684;
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            animation: confettiFall 3s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Progress Bar */
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e5e8eb;
+            z-index: -1;
+        }
+
+        .progress-step:last-child::before {
+            display: none;
+        }
+
+        .progress-step.active::before {
+            background: #48BB78;
+        }
+
+        .progress-circle {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto 8px;
+            background: white;
+            border: 2px solid #e5e8eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .progress-step.active .progress-circle {
+            background: #48BB78;
+            border-color: #48BB78;
+            color: white;
+        }
+
+        .progress-label {
+            font-size: 0.75rem;
+            color: #6B7684;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .success-card {
+                padding: 32px 24px;
+            }
+            
+            .success-title {
+                font-size: 1.5rem;
+            }
+            
+            .action-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+
+        <!-- Success Icon -->
+        <div class="success-icon-wrapper">
+            <div class="success-icon">
+                <span class="checkmark">✓</span>
+            </div>
+        </div>
+
+        <!-- Success Card -->
+        <div class="success-card">
+            <h1 class="success-title">🎉 성공! 이제 MTS 멤버예요!</h1>
+            <p class="success-subtitle">
+                <strong th:text="${userEmail != null} ? ${userEmail} : 'user@example.com'">user@example.com</strong><br>
+                계정으로 가입 완료! 이젠 메일 놓칠 일 없어요 ⚡
+            </p>
+            <div class="welcome-message">
+                🚀 이제 슬랙에서 메일 받아보세요! 업무 효율 200% 업! ✨
+            </div>
+
+            <!-- Action Button -->
+            <a href="/" class="btn-primary-custom">
+                <i class="fas fa-rocket"></i>
+                이제 시작해볼까요!
+            </a>
+        </div>
+    </div>
+
+    <!-- Confetti Effect -->
+    <script>
+        // Create confetti
+        function createConfetti() {
+            const colors = ['#3182F6', '#60A5FA', '#1D4ED8', '#DBEAFE', '#1E40AF'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        // Run confetti on load
+        window.addEventListener('load', createConfetti);
+
+        // Animate step completion
+        function animateSteps() {
+            const steps = document.querySelectorAll('.step-item');
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    step.classList.add('completed');
+                }, 1500 + (index * 300));
+            });
+        }
+
+        // Start animations after a delay
+        setTimeout(animateSteps, 1000);
+    </script>
+</body>
+</html>
