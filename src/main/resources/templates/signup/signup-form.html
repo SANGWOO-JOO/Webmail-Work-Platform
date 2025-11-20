@@ -539,14 +539,37 @@
                                th:classappend="${#fields.hasErrors('pop3Password')} ? 'is-invalid' : ''"
                                placeholder="메일 서비스 비밀번호"
                                required>
-                        <button type="button" class="password-toggle" onclick="togglePassword()">
-                            <i class="fas fa-eye" id="passwordIcon"></i>
+                        <button type="button" class="password-toggle" onclick="togglePassword('pop3Password', 'pop3PasswordIcon')">
+                            <i class="fas fa-eye" id="pop3PasswordIcon"></i>
                         </button>
                     </div>
                     <div class="form-helper">POP3 연동을 위한 메일 계정의 비밀번호입니다</div>
                     <div th:if="${#fields.hasErrors('pop3Password')}" class="error-message">
                         <i class="fas fa-exclamation-circle"></i>
                         <span th:errors="*{pop3Password}"></span>
+                    </div>
+                </div>
+
+                <!-- Web Login Password Field -->
+                <div class="mb-4">
+                    <label for="webPassword" class="form-label">웹 로그인 패스워드</label>
+                    <div class="password-group">
+                        <input type="password"
+                               class="form-control-custom"
+                               id="webPassword"
+                               th:field="*{webPassword}"
+                               th:classappend="${#fields.hasErrors('webPassword')} ? 'is-invalid' : ''"
+                               placeholder="8자 이상 입력하세요"
+                               minlength="8"
+                               required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('webPassword', 'webPasswordIcon')">
+                            <i class="fas fa-eye" id="webPasswordIcon"></i>
+                        </button>
+                    </div>
+                    <div class="form-helper">웹사이트 로그인 시 사용할 패스워드입니다 (8자 이상)</div>
+                    <div th:if="${#fields.hasErrors('webPassword')}" class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span th:errors="*{webPassword}"></span>
                     </div>
                 </div>
 
@@ -595,10 +618,10 @@
     </div>
 
     <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('pop3Password');
-            const passwordIcon = document.getElementById('passwordIcon');
-            
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const passwordIcon = document.getElementById(iconId);
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 passwordIcon.classList.remove('fa-eye');
@@ -613,20 +636,23 @@
         // Form validation
         const form = document.getElementById('signupForm');
         const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('pop3Password');
+        const pop3PasswordInput = document.getElementById('pop3Password');
+        const webPasswordInput = document.getElementById('webPassword');
         const termsCheckbox = document.getElementById('agreeTerms');
         const submitBtn = document.getElementById('submitBtn');
 
         function validateForm() {
-            const isValid = emailInput.validity.valid && 
-                          passwordInput.value.length > 0 && 
+            const isValid = emailInput.validity.valid &&
+                          pop3PasswordInput.value.length > 0 &&
+                          webPasswordInput.value.length >= 8 &&
                           termsCheckbox.checked;
-            
+
             submitBtn.disabled = !isValid;
         }
 
         emailInput.addEventListener('input', validateForm);
-        passwordInput.addEventListener('input', validateForm);
+        pop3PasswordInput.addEventListener('input', validateForm);
+        webPasswordInput.addEventListener('input', validateForm);
         termsCheckbox.addEventListener('change', validateForm);
 
         // Initial validation

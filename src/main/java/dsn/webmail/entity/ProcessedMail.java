@@ -32,6 +32,9 @@ public class ProcessedMail {
     @Column(length = 200)
     private String fromAddress;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String content;
+
     public ProcessedMail() {}
 
     public ProcessedMail(Long userId, String messageId) {
@@ -39,11 +42,12 @@ public class ProcessedMail {
         this.messageId = messageId;
     }
 
-    public ProcessedMail(Long userId, String messageId, String subject, String fromAddress) {
+    public ProcessedMail(Long userId, String messageId, String subject, String fromAddress, String content) {
         this.userId = userId;
         this.messageId = messageId;
         this.subject = subject;
         this.fromAddress = fromAddress;
+        this.content = content;
     }
 
     public Long getId() {
@@ -92,5 +96,13 @@ public class ProcessedMail {
 
     public void setFromAddress(String fromAddress) {
         this.fromAddress = fromAddress;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
     }
 }

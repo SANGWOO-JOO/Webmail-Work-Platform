@@ -48,9 +48,39 @@ public class AppUser {
     @Column
     private LocalDateTime nextRetryAt;
 
-    public enum Status { 
-        PENDING, ACTIVE, LOCKED 
+    @Column(nullable = false, length = 60)
+    private String passwordHash;
+
+    @Column(nullable = false)
+    private Boolean webLoginEnabled = true;
+
+    @Column(nullable = false)
+    private Integer loginFailureCount = 0;
+
+    @Column
+    private LocalDateTime lastLoginAt;
+
+    public enum Status {
+        PENDING, ACTIVE, LOCKED
     }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.USER;
+
+    public enum Role {
+        USER,
+        ADMIN
+    }
+
+    // Getter & Setter
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
 
     public AppUser() {}
 
@@ -143,5 +173,37 @@ public class AppUser {
 
     public void setNextRetryAt(LocalDateTime nextRetryAt) {
         this.nextRetryAt = nextRetryAt;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public Boolean getWebLoginEnabled() {
+        return webLoginEnabled;
+    }
+
+    public void setWebLoginEnabled(Boolean webLoginEnabled) {
+        this.webLoginEnabled = webLoginEnabled;
+    }
+
+    public Integer getLoginFailureCount() {
+        return loginFailureCount;
+    }
+
+    public void setLoginFailureCount(Integer loginFailureCount) {
+        this.loginFailureCount = loginFailureCount;
+    }
+
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
     }
 }

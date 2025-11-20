@@ -82,16 +82,46 @@
             gap: 32px;
         }
 
-        .nav-link {
-            color: #6B7684;
+        .btn-nav-link {
+            color: #191F28;
             text-decoration: none;
             font-size: 1rem;
             font-weight: 500;
+            padding: 8px 16px;
             transition: color 0.2s;
         }
 
-        .nav-link:hover {
+        .btn-nav-link:hover {
             color: var(--primary);
+        }
+
+        .btn-nav-primary {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #3182F6 0%, #1E40AF 100%);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-nav-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(49, 130, 246, 0.3);
+            color: white;
+        }
+
+        /* 모바일 메뉴 토글 버튼 */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 8px;
         }
 
         /* Hero Section - 토스 스타일 */
@@ -527,6 +557,39 @@
                 flex-direction: column;
                 text-align: center;
             }
+
+            /* 모바일 네비게이션 */
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                right: -100%;
+                background: white;
+                width: 250px;
+                height: calc(100vh - 70px);
+                flex-direction: column;
+                padding: 24px;
+                box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+                transition: right 0.3s ease;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .nav-menu.active {
+                right: 0;
+            }
+
+            .btn-nav-primary {
+                width: 100%;
+                text-align: center;
+            }
+
+            .btn-nav-link {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -539,12 +602,21 @@
                     <i class="fas fa-envelope-open-text"></i>
                     <span>MTS</span>
                 </a>
-                <div class="nav-menu">
+
+                <!-- 모바일 메뉴 토글 버튼 -->
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <!-- 네비게이션 메뉴 (동적으로 변경됨) -->
+                <div class="nav-menu" id="navMenu">
+                    <!-- 비로그인 상태 (기본) -->
+                    <a href="/login" class="btn-nav-link" id="loginBtn">로그인</a>
+<!--                    <a href="/signup" class="btn-nav-primary" id="signupBtn">시작하기</a>-->
                 </div>
             </div>
         </div>
     </nav>
-    /signup/verify
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="hero-content">
@@ -705,6 +777,75 @@
                     });
                 }
             });
+        });
+
+        // 모바일 메뉴 토글
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function() {
+                navMenu.classList.toggle('active');
+                const icon = this.querySelector('i');
+                if (navMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
+
+        // 동적 네비게이션 - JWT 토큰 확인
+        function updateNavigation() {
+            const accessToken = localStorage.getItem('accessToken');
+            const navMenu = document.getElementById('navMenu');
+
+            if (accessToken) {
+                // 로그인 상태 - 토큰 검증 (간단한 만료 확인)
+                try {
+                    const payload = JSON.parse(atob(accessToken.split('.')[1]));
+                    const exp = payload.exp * 1000; // 초 → 밀리초
+
+                    if (Date.now() < exp) {
+                        // 토큰이 유효함 - 로그인 상태 UI
+                        navMenu.innerHTML = `
+                            <a href="/dashboard" class="btn-nav-link">대시보드</a>
+                            <a href="/logout" class="btn-nav-link" onclick="handleLogout(event)">로그아웃</a>
+                        `;
+                    } else {
+                        // 토큰 만료 - 비로그인 상태 UI
+                        showLoggedOutNavigation();
+                    }
+                } catch (error) {
+                    // 토큰 파싱 실패 - 비로그인 상태 UI
+                    showLoggedOutNavigation();
+                }
+            } else {
+                // 비로그인 상태 UI
+                showLoggedOutNavigation();
+            }
+        }
+
+        function showLoggedOutNavigation() {
+            const navMenu = document.getElementById('navMenu');
+            navMenu.innerHTML = `
+                <a href="/login" class="btn-nav-primary" id="loginBtn">로그인</a>
+<!--                <a href="/signup" class="btn-nav-primary" id="signupBtn">시작하기</a>-->
+            `;
+        }
+
+        function handleLogout(event) {
+            event.preventDefault();
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/';
+        }
+
+        // 페이지 로드 시 네비게이션 업데이트
+        document.addEventListener('DOMContentLoaded', function() {
+            updateNavigation();
         });
     </script>
 </body>

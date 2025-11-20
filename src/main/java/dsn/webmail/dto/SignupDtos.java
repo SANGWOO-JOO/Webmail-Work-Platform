@@ -11,14 +11,19 @@ public class SignupDtos {
     @Schema(description = "인증 코드 요청 DTO")
     public record RequestCode(
             @Schema(description = "가입 이메일", example = "johndoe@dsntech.com")
-            @NotBlank(message = "이메일은 필수입니다") 
-            @Email(message = "올바른 이메일 형식이 아닙니다") 
+            @NotBlank(message = "이메일은 필수입니다")
+            @Email(message = "올바른 이메일 형식이 아닙니다")
             String email,
 
             @Schema(description = "POP3 계정 비밀번호(양방향 암호 저장)", example = "any_password_string")
-            @NotBlank(message = "POP3 비밀번호는 필수입니다") 
+            @NotBlank(message = "POP3 비밀번호는 필수입니다")
             @Size(min = 1, max = 255, message = "POP3 비밀번호는 1-255자 사이여야 합니다")
-            String pop3Password
+            String pop3Password,
+
+            @Schema(description = "웹 로그인 패스워드(BCrypt 해시 저장)", example = "mypassword123")
+            @NotBlank(message = "웹 로그인 패스워드는 필수입니다")
+            @Size(min = 8, max = 100, message = "웹 로그인 패스워드는 8-100자 사이여야 합니다")
+            String webPassword
     ) {}
 
     @Schema(description = "코드 검증 DTO")

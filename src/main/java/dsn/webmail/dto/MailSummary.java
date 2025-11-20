@@ -7,5 +7,6 @@ public record MailSummary(
     String subject,
     String fromAddress,
     LocalDateTime receivedDate,
-    int size
+    int size,
+    String content
 ) {}

@@ -5,10 +5,10 @@ import dsn.webmail.dto.MailSummary;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jsoup.Jsoup;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
@@ -87,8 +87,9 @@ public class MailReceiver {
         String fromAddress = extractFromAddress(message);
         LocalDateTime receivedDate = extractReceivedDate(message);
         int size = message.getSize();
-        
-        return new MailSummary(messageId, subject, fromAddress, receivedDate, size);
+        String content = extractContent(message);
+
+        return new MailSummary(messageId, subject, fromAddress, receivedDate, size, content);
     }
 
     private String extractMessageId(Message message) throws MessagingException {
@@ -143,12 +144,124 @@ public class MailReceiver {
         if (receivedDate != null) {
             return receivedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         }
-        
+
         Date sentDate = message.getSentDate();
         if (sentDate != null) {
             return sentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         }
-        
+
         return LocalDateTime.now();
+    }
+
+    /**
+     * 이메일 본문 내용을 추출합니다.
+     * 단순 텍스트 메일과 Multipart 메일 모두 처리합니다.
+     */
+    private String extractContent(Message message) {
+        try {
+            Object content = message.getContent();
+
+            if (content instanceof String) {
+                return (String) content;
+            } else if (content instanceof Multipart) {
+                return extractTextFromMultipart((Multipart) content);
+            }
+
+            return "";
+        } catch (MessagingException | IOException e) {
+            log.warn("Failed to extract content from message: {}", e.getMessage());
+            return "(본문을 읽을 수 없습니다)";
+        }
+    }
+
+    /**
+     * Multipart 메일에서 텍스트 본문을 추출합니다.
+     * text/plain 우선, 없으면 text/html 사용 (중복 방지)
+     * 중첩된 Multipart도 재귀적으로 처리합니다.
+     */
+    private String extractTextFromMultipart(Multipart multipart) throws MessagingException, IOException {
+        String plainText = null;
+        String htmlText = null;
+
+        for (int i = 0; i < multipart.getCount(); i++) {
+            BodyPart bodyPart = multipart.getBodyPart(i);
+
+            if (bodyPart.isMimeType("text/plain")) {
+                // text/plain 파트 저장
+                plainText = bodyPart.getContent().toString();
+            } else if (bodyPart.isMimeType("text/html")) {
+                // text/html 파트 저장
+                htmlText = bodyPart.getContent().toString();
+            } else if (bodyPart.getContent() instanceof Multipart) {
+                // 중첩된 Multipart 재귀 처리
+                String nested = extractTextFromMultipart((Multipart) bodyPart.getContent());
+                if (!nested.isEmpty()) {
+                    return nested;
+                }
+            }
+        }
+
+        // text/plain 우선, 없으면 text/html 사용
+        if (plainText != null) {
+            return decodeHtmlEntities(plainText);
+        } else if (htmlText != null) {
+            return stripHtmlTags(htmlText);
+        }
+
+        return "";
+    }
+
+    /**
+     * HTML 엔티티만 디코딩합니다 (태그 제거 없이).
+     * text/plain 파트에 포함된 &nbsp;, &lt; 같은 엔티티를 일반 문자로 변환합니다.
+     */
+    private String decodeHtmlEntities(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+
+        try {
+            // Jsoup.parse()를 사용하여 HTML 엔티티 디코딩
+            // 태그가 없는 순수 텍스트이므로 태그 제거는 발생하지 않음
+            return Jsoup.parse(text).text();
+        } catch (Exception e) {
+            log.warn("Failed to decode HTML entities: {}", e.getMessage());
+            return text;
+        }
+    }
+
+    /**
+     * HTML 태그를 제거하고 순수 텍스트만 추출합니다.
+     * 줄바꿈을 보존하면서 HTML 엔티티를 디코딩합니다.
+     */
+    private String stripHtmlTags(String html) {
+        if (html == null || html.isEmpty()) {
+            return "";
+        }
+
+        try {
+            // 1. 블록 레벨 요소를 줄바꿈으로 변환
+            String processed = html
+                .replaceAll("(?i)<br\\s*/?>", "\n")           // <br> → 줄바꿈
+                .replaceAll("(?i)</p>", "\n")                 // </p> → 줄바꿈
+                .replaceAll("(?i)</div>", "\n")               // </div> → 줄바꿈
+                .replaceAll("(?i)</h[1-6]>", "\n")            // </h1-6> → 줄바꿈
+                .replaceAll("(?i)</li>", "\n")                // </li> → 줄바꿈
+                .replaceAll("(?i)</tr>", "\n");               // </tr> → 줄바꿈
+
+            // 2. Jsoup으로 HTML 태그 제거 및 엔티티 디코딩
+            String text = Jsoup.parse(processed).text();
+
+            // 3. 연속된 공백/줄바꿈 정리
+            return text
+                .replaceAll("[ \\t]+", " ")                   // 연속된 공백을 하나로
+                .replaceAll("\n{3,}", "\n\n")                 // 3개 이상 줄바꿈을 2개로
+                .trim();                                       // 앞뒤 공백 제거
+
+        } catch (Exception e) {
+            log.warn("Failed to strip HTML tags: {}", e.getMessage());
+            // 파싱 실패 시 원본 반환
+            return html;
+        }
     }
 }

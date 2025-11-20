@@ -87,21 +87,17 @@ public class MailAlertService {
         String formattedSize = formatFileSize(mail.size());
 
         return String.format("""
-                        :envelope: *새 메일이 도착했습니다!*
-                        ━━━━━━━━━━━ ━━━━━━━━━━━━━━━━
-                        
-                        :memo: *제목*
-                        %s
-                        
-                        :bust_in_silhouette: *발신자*
-                        `%s
-                        
-                        :clock10: *수신 시간*
-                        %s
-                        
+                        📬 *새 메일 도착*
+
+                        *제목:* %s
+                        *발신자:* %s
+                        *수신:* %s | 크기: %s
+
+                        ───────────────────
+                        받은메일함: %s
                         """,
-                mail.fromAddress(),
                 mail.subject(),
+                mail.fromAddress(),
                 receivedTime,
                 formattedSize,
                 email
@@ -123,7 +119,8 @@ public class MailAlertService {
                 userId,
                 mail.messageId(),
                 mail.subject(),
-                mail.fromAddress()
+                mail.fromAddress(),
+                mail.content()
         );
         processedMailRepo.save(processed);
         log.debug("Saved processed mail record: {}", mail.messageId());

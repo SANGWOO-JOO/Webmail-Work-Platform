@@ -26,7 +26,7 @@ public class SignupWebController {
      */
     @GetMapping
     public String signupForm(Model model) {
-        model.addAttribute("requestCode", new RequestCode("", ""));
+        model.addAttribute("requestCode", new RequestCode("", "", ""));
         return "signup/signup-form";
     }
 
@@ -44,14 +44,14 @@ public class SignupWebController {
         }
 
         try {
-            signupService.requestCode(requestCode.email(), requestCode.pop3Password());
-            
+            signupService.requestCode(requestCode.email(), requestCode.pop3Password(), requestCode.webPassword());
+
             // 인증 코드 발송 성공 시 검증 페이지로 리다이렉트
             redirectAttributes.addFlashAttribute("email", requestCode.email());
             redirectAttributes.addFlashAttribute("successMessage", "인증 코드가 이메일로 발송되었습니다. 10분 내에 입력해주세요.");
-            
+
             return "redirect:/signup/verify";
-            
+
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
             return "signup/signup-form";
