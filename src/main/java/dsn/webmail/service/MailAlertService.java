@@ -22,15 +22,18 @@ public class MailAlertService {
     private final SlackBotClient slackBotClient;
     private final ProcessedMailRepository processedMailRepo;
     private final PasswordCipher passwordCipher;
+    private final EventExtractionService eventExtractionService;
 
     public MailAlertService(MailReceiver mailReceiver,
                             SlackBotClient slackBotClient,
                             ProcessedMailRepository processedMailRepo,
-                            PasswordCipher passwordCipher) {
+                            PasswordCipher passwordCipher,
+                            EventExtractionService eventExtractionService) {
         this.mailReceiver = mailReceiver;
         this.slackBotClient = slackBotClient;
         this.processedMailRepo = processedMailRepo;
         this.passwordCipher = passwordCipher;
+        this.eventExtractionService = eventExtractionService;
     }
 
     @Transactional
@@ -52,6 +55,10 @@ public class MailAlertService {
             if (!processedMailRepo.existsByUserIdAndMessageId(user.getId(), mail.messageId())) {
                 sendSlackNotification(user, mail);
                 saveProcessedMail(user.getId(), mail);
+
+                // 이벤트 추출 (AI 호출) - 실패해도 메일 처리는 계속
+                extractEvent(user, mail);
+
                 newMailCount++;
             }
         }
@@ -124,5 +131,15 @@ public class MailAlertService {
         );
         processedMailRepo.save(processed);
         log.debug("Saved processed mail record: {}", mail.messageId());
+    }
+
+    private void extractEvent(AppUser user, MailSummary mail) {
+        try {
+            eventExtractionService.extractEventFromMail(user, mail.messageId(), mail.content());
+        } catch (Exception e) {
+            // 이벤트 추출 실패는 비치명적 에러로 처리
+            log.error("Failed to extract event from mail {}: {} (continuing mail processing)",
+                    mail.messageId(), e.getMessage());
+        }
     }
 }

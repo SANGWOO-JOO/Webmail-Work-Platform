@@ -22,6 +22,13 @@ public class MailEvent {
     @Column(name = "id")
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser user;
+
+    @Column(name = "message_id")
+    private String sourceMessageId; // 원본 메일 추적용
+
     private String title; // 회의 제목
     private String dateTime; // "2025-11-26 14:00" 형태로 저장
     private String location; // 장소

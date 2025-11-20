@@ -79,6 +79,7 @@ public class SecurityConfig {
                                 "/login",
                                 "/signup/**",
                                 "/dashboard/**",  // 대시보드 HTML 로드 허용 (auth-guard.js가 클라이언트에서 검증)
+                                "/schedule/**",   // 일정 HTML 로드 허용 (auth-guard.js가 클라이언트에서 검증)
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
