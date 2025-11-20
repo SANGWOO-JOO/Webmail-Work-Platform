@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 음악 추천 - MTS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3182F6;
+            --primary-hover: #1D4ED8;
+            --primary-light: #DBEAFE;
+            --secondary: #1E40AF;
+            --accent: #60A5FA;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --purple: #8B5CF6;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F8FAFC;
+            --text-primary: #191F28;
+            --text-secondary: #6B7684;
+            --sidebar-width: 250px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .dashboard-wrapper { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #e5e8eb;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .sidebar-header { padding: 24px; border-bottom: 1px solid #e5e8eb; }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover { background: var(--bg-secondary); color: var(--primary); }
+
+        .nav-item.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .nav-item i { width: 20px; text-align: center; }
+
+        /* Main Content */
+        .main-content { flex: 1; margin-left: var(--sidebar-width); min-height: 100vh; }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e8eb;
+            padding: 20px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title { font-size: 1.5rem; font-weight: 700; }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-logout:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+        .content { padding: 32px; max-width: 900px; margin: 0 auto; }
+
+        /* Prompt Card */
+        .prompt-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid #e5e8eb;
+        }
+
+        .prompt-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .prompt-input {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid #e5e8eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            resize: none;
+            min-height: 100px;
+            margin-bottom: 16px;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn-recommend {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-recommend:hover { background: var(--primary-hover); }
+        .btn-recommend:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Quick Buttons */
+        .quick-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .quick-btn {
+            padding: 12px 20px;
+            background: white;
+            border: 1px solid #e5e8eb;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 80px;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .quick-btn .emoji { font-size: 1.5rem; }
+        .quick-btn .label { font-size: 0.875rem; color: var(--text-secondary); }
+
+        /* Mail Based */
+        .mail-based-card {
+            background: linear-gradient(135deg, var(--purple) 0%, #7C3AED 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mail-based-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+        }
+
+        .mail-based-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mail-based-desc { font-size: 0.875rem; opacity: 0.9; }
+
+        /* Results */
+        .results-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e5e8eb;
+            display: none;
+        }
+
+        .results-card.active { display: block; }
+
+        .analysis-box {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .analysis-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .analysis-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .tracks-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .track-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .track-card:hover { background: var(--bg-secondary); }
+
+        .track-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #e5e8eb;
+        }
+
+        .track-info { flex: 1; min-width: 0; }
+
+        .track-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-artist {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-actions { display: flex; gap: 8px; }
+
+        .btn-play, .btn-spotify {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-play {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .btn-play:hover { background: var(--primary); color: white; }
+
+        .btn-spotify {
+            background: #1DB954;
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-spotify:hover { background: #1ed760; color: white; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo">
+                <i class="fas fa-envelope-open-text"></i>
+                <span>MTS</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>대시보드</span>
+            </a>
+            <a href="/schedule" class="nav-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>일정</span>
+            </a>
+            <a href="/dashboard/mail" class="nav-item">
+                <i class="fas fa-inbox"></i>
+                <span>메일 목록</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>통계</span>
+            </a>
+            <a href="/music" class="nav-item active">
+                <i class="fas fa-music"></i>
+                <span>음악</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <h1 class="header-title">AI 음악 추천</h1>
+            <a href="#" class="btn-logout" onclick="handleLogout(event)">
+                <i class="fas fa-sign-out-alt"></i>
+                로그아웃
+            </a>
+        </header>
+
+        <div class="content">
+            <!-- Prompt Input -->
+            <div class="prompt-card">
+                <h2 class="prompt-title">
+                    <i class="fas fa-magic"></i>
+                    지금 기분이 어떠세요?
+                </h2>
+                <textarea class="prompt-input" id="promptInput"
+                    placeholder="예: 오늘 하루 너무 힘들었어. 위로가 되는 음악 추천해줘"></textarea>
+                <button class="btn-recommend" id="recommendBtn" onclick="getRecommendation()">
+                    <i class="fas fa-music"></i>
+                    추천받기
+                </button>
+            </div>
+
+            <!-- Quick Buttons -->
+            <div class="quick-buttons">
+                <button class="quick-btn" onclick="quickRecommend('happy')">
+                    <span class="emoji">😊</span>
+                    <span class="label">행복</span>
+                </button>
+                <button class="quick-btn" onclick="quickRecommend('comfort')">
+                    <span class="emoji">😢</span>
+                    <span class="label">위로</span>
+                </button>
+                <button class="quick-btn" onclick="quickRecommend('energy')">
+                    <span class="emoji">🔥</span>
+                    <span class="label">에너지</span>
+                </button>
+                <button class="quick-btn" onclick="quickRecommend('relax')">
+                    <span class="emoji">😴</span>
+                    <span class="label">휴식</span>
+                </button>
+                <button class="quick-btn" onclick="quickRecommend('focus')">
+                    <span class="emoji">🎯</span>
+                    <span class="label">집중</span>
+                </button>
+            </div>
+
+            <!-- Mail Based Recommendation -->
+            <div class="mail-based-card" onclick="getMailBasedRecommendation()">
+                <h3 class="mail-based-title">
+                    <i class="fas fa-envelope"></i>
+                    오늘의 메일 기반 추천
+                </h3>
+                <p class="mail-based-desc">오늘 받은 메일을 분석하여 맞춤 음악을 추천해드립니다</p>
+            </div>
+
+            <!-- Results -->
+            <div class="results-card" id="resultsCard">
+                <div class="analysis-box">
+                    <div class="analysis-title">AI 분석 결과</div>
+                    <div class="analysis-text" id="analysisText"></div>
+                </div>
+                <h3 class="tracks-title">추천 트랙</h3>
+                <div id="tracksList"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/auth-guard.js"></script>
+<script>
+    function handleLogout(event) {
+        event.preventDefault();
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+    }
+
+    const quickPrompts = {
+        happy: '기분 좋은 하루를 더 신나게 만들어줄 밝은 음악',
+        comfort: '힘든 하루를 위로해줄 잔잔한 음악',
+        energy: '운동하거나 에너지가 필요할 때 들을 신나는 음악',
+        relax: '퇴근 후 편안하게 휴식할 때 들을 음악',
+        focus: '집중해서 작업할 때 들을 배경 음악'
+    };
+
+    function quickRecommend(type) {
+        document.getElementById('promptInput').value = quickPrompts[type];
+        getRecommendation();
+    }
+
+    async function getRecommendation() {
+        const prompt = document.getElementById('promptInput').value.trim();
+        if (!prompt) {
+            alert('기분이나 상황을 입력해주세요.');
+            return;
+        }
+
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        const btn = document.getElementById('recommendBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 분석 중...';
+
+        try {
+            const response = await fetch('/api/music/recommend', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt, limit: 10 })
+            });
+
+            if (!response.ok) throw new Error('추천 실패');
+
+            const data = await response.json();
+            displayResults(data);
+        } catch (error) {
+            console.error('추천 오류:', error);
+            alert('음악 추천에 실패했습니다.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-music"></i> 추천받기';
+        }
+    }
+
+    async function getMailBasedRecommendation() {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        const resultsCard = document.getElementById('resultsCard');
+        resultsCard.classList.add('active');
+        document.getElementById('analysisText').textContent = '메일을 분석하고 있습니다...';
+        document.getElementById('tracksList').innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>';
+
+        try {
+            const response = await fetch('/api/music/recommend/by-mail?limit=10', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) throw new Error('추천 실패');
+
+            const data = await response.json();
+            displayResults(data);
+        } catch (error) {
+            console.error('메일 기반 추천 오류:', error);
+            alert('메일 기반 추천에 실패했습니다.');
+        }
+    }
+
+    function displayResults(data) {
+        const resultsCard = document.getElementById('resultsCard');
+        resultsCard.classList.add('active');
+
+        // 분석 결과
+        document.getElementById('analysisText').textContent = data.analysis.reasoning;
+
+        // 트랙 목록
+        const tracksList = document.getElementById('tracksList');
+
+        if (!data.tracks || data.tracks.length === 0) {
+            tracksList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">추천 트랙이 없습니다.</p>';
+            return;
+        }
+
+        tracksList.innerHTML = data.tracks.map(track => `
+            <div class="track-card">
+                <img class="track-image" src="${track.albumImageUrl || ''}" alt="${track.album}"
+                    onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 60%22><rect fill=%22%23e5e8eb%22 width=%2260%22 height=%2260%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%236B7684%22 font-size=%2220%22>♪</text></svg>'">
+                <div class="track-info">
+                    <div class="track-name">${track.name}</div>
+                    <div class="track-artist">${track.artist}</div>
+                </div>
+                <div class="track-actions">
+                    ${track.previewUrl ? `<button class="btn-play" onclick="playPreview('${track.previewUrl}')"><i class="fas fa-play"></i> 미리듣기</button>` : ''}
+                    <a class="btn-spotify" href="${track.spotifyUrl}" target="_blank"><i class="fab fa-spotify"></i> Spotify</a>
+                </div>
+            </div>
+        `).join('');
+
+        // 결과로 스크롤
+        resultsCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    let currentAudio = null;
+
+    function playPreview(url) {
+        if (currentAudio) {
+            currentAudio.pause();
+        }
+        currentAudio = new Audio(url);
+        currentAudio.play();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            window.location.href = '/login';
+        }
+    });
+</script>
+</body>
+</html>

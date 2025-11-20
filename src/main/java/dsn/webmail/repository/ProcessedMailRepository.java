@@ -27,4 +27,7 @@ public interface ProcessedMailRepository extends JpaRepository<ProcessedMail, Lo
 
     // 사용자별 메일 상세 조회
     Optional<ProcessedMail> findByIdAndUserId(Long id, Long userId);
+
+    // 특정 시간 이후 메일 조회
+    java.util.List<ProcessedMail> findByUserIdAndProcessedAtAfterOrderByProcessedAtDesc(Long userId, LocalDateTime after);
 }

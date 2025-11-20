@@ -4,6 +4,7 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
 import dsn.webmail.service.MailAnalysisAiService;
+import dsn.webmail.service.MusicMoodAnalyzer;
 import dsn.webmail.service.ReplyGenerationAiService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +35,13 @@ public class Langchain4jConfig {
     @Bean
     public ReplyGenerationAiService replyGenerationAiService(ChatLanguageModel chatLanguageModel) {
         return AiServices.builder(ReplyGenerationAiService.class)
+                .chatLanguageModel(chatLanguageModel)
+                .build();
+    }
+
+    @Bean
+    public MusicMoodAnalyzer musicMoodAnalyzer(ChatLanguageModel chatLanguageModel) {
+        return AiServices.builder(MusicMoodAnalyzer.class)
                 .chatLanguageModel(chatLanguageModel)
                 .build();
     }
