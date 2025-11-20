@@ -10,7 +10,9 @@ public class ScheduleDtos {
             String dateTime,
             String location,
             Float confidence,
-            String sourceMessageId
+            String sourceMessageId,
+            String mailSubject,
+            String mailFromAddress
     ) {}
 
     public record ScheduleListResponse(

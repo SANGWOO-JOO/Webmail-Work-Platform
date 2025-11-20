@@ -455,6 +455,69 @@
             background: #dc2626;
         }
 
+        /* Mail info toggle */
+        .mail-toggle {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .mail-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            padding: 8px 0;
+            width: 100%;
+            text-align: left;
+        }
+
+        .mail-toggle-btn:hover {
+            color: var(--primary-hover);
+        }
+
+        .mail-toggle-content {
+            display: none;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .mail-toggle-content.show {
+            display: block;
+        }
+
+        .mail-info-item {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+        }
+
+        .mail-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .mail-info-icon {
+            color: var(--text-secondary);
+            width: 16px;
+        }
+
+        .mail-info-label {
+            color: var(--text-secondary);
+            min-width: 50px;
+        }
+
+        .mail-info-value {
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
         /* Loading */
         .loading {
             text-align: center;
@@ -804,6 +867,8 @@
 
             const confidencePercent = (event.confidence || 0) * 100;
 
+            const hasMailInfo = event.mailSubject || event.mailFromAddress;
+
             document.getElementById('modalBody').innerHTML = `
                 <div class="event-detail">
                     <div class="event-detail-icon"><i class="fas fa-clock"></i></div>
@@ -829,6 +894,26 @@
                         </div>
                     </div>
                 </div>
+                ${hasMailInfo ? `
+                <div class="mail-toggle">
+                    <button class="mail-toggle-btn" onclick="toggleMailInfo()">
+                        <i class="fas fa-chevron-right" id="mailToggleIcon"></i>
+                        원본 메일 보기
+                    </button>
+                    <div class="mail-toggle-content" id="mailToggleContent">
+                        <div class="mail-info-item">
+                            <i class="fas fa-envelope mail-info-icon"></i>
+                            <span class="mail-info-label">제목</span>
+                            <span class="mail-info-value">${event.mailSubject || '-'}</span>
+                        </div>
+                        <div class="mail-info-item">
+                            <i class="fas fa-user mail-info-icon"></i>
+                            <span class="mail-info-label">발신자</span>
+                            <span class="mail-info-value">${event.mailFromAddress || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
             `;
 
             document.getElementById('eventModal').classList.add('active');
@@ -869,6 +954,22 @@
         } catch (error) {
             console.error('Failed to delete event:', error);
             alert('일정 삭제에 실패했습니다.');
+        }
+    }
+
+    // Toggle mail info
+    function toggleMailInfo() {
+        const content = document.getElementById('mailToggleContent');
+        const icon = document.getElementById('mailToggleIcon');
+
+        if (content.classList.contains('show')) {
+            content.classList.remove('show');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-right');
+        } else {
+            content.classList.add('show');
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-down');
         }
     }
 

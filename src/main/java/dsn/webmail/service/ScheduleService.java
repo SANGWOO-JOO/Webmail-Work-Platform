@@ -35,12 +35,12 @@ public class ScheduleService {
             month = LocalDate.now().getMonthValue();
         }
 
-        // "2025-11" 형식으로 조회
+        // "2025-11" 형식으로 조회 (ProcessedMail JOIN)
         String yearMonth = String.format("%d-%02d", year, month);
-        List<MailEvent> events = mailEventRepository.findByUserIdAndYearMonth(user.getId(), yearMonth);
+        List<Object[]> results = mailEventRepository.findByUserIdAndYearMonthWithMailInfo(user.getId(), yearMonth);
 
-        List<ScheduleEventResponse> eventResponses = events.stream()
-                .map(this::toEventResponse)
+        List<ScheduleEventResponse> eventResponses = results.stream()
+                .map(this::toEventResponseWithMailInfo)
                 .toList();
 
         return new ScheduleListResponse(eventResponses);
@@ -51,10 +51,13 @@ public class ScheduleService {
         AppUser user = appUserRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + email));
 
-        MailEvent event = mailEventRepository.findByIdAndUserId(eventId, user.getId())
-                .orElseThrow(() -> new RuntimeException("일정을 찾을 수 없습니다: " + eventId));
+        List<Object[]> results = mailEventRepository.findByIdAndUserIdWithMailInfo(eventId, user.getId());
 
-        return toEventResponse(event);
+        if (results.isEmpty()) {
+            throw new RuntimeException("일정을 찾을 수 없습니다: " + eventId);
+        }
+
+        return toEventResponseWithMailInfo(results.get(0));
     }
 
     @Transactional
@@ -69,14 +72,20 @@ public class ScheduleService {
         log.info("일정 삭제: userId={}, eventId={}", user.getId(), eventId);
     }
 
-    private ScheduleEventResponse toEventResponse(MailEvent event) {
+    private ScheduleEventResponse toEventResponseWithMailInfo(Object[] result) {
+        MailEvent event = (MailEvent) result[0];
+        String mailSubject = (String) result[1];
+        String mailFromAddress = (String) result[2];
+
         return new ScheduleEventResponse(
                 event.getId(),
                 event.getTitle(),
                 event.getDateTime(),
                 event.getLocation(),
                 event.getConfidence(),
-                event.getSourceMessageId()
+                event.getSourceMessageId(),
+                mailSubject,
+                mailFromAddress
         );
     }
 }
