@@ -755,7 +755,9 @@
 
     // Reply Generation Functions
     function openReplyOptions() {
-        closeModal();
+        const mailId = selectedMailId; // Save before closing
+        document.getElementById('mailModal').classList.remove('active');
+        selectedMailId = mailId; // Restore
         document.getElementById('replyOptionsModal').classList.add('active');
         // Reset selections
         selectedTone = 'NEUTRAL';
