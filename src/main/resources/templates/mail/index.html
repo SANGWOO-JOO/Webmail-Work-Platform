@@ -298,6 +298,96 @@
 
         .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
 
+        /* Reply Generation */
+        .btn-generate-reply {
+            padding: 8px 16px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-right: 8px;
+        }
+
+        .btn-generate-reply:hover { background: #059669; }
+
+        .option-group { margin-bottom: 16px; }
+        .option-label { font-weight: 600; margin-bottom: 8px; display: block; }
+
+        .radio-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .radio-option {
+            padding: 8px 16px;
+            border: 1px solid #e5e8eb;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .radio-option:hover { border-color: var(--primary); }
+
+        .radio-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .context-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            padding: 10px 20px;
+            background: white;
+            color: var(--text-primary);
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn-secondary:hover { background: var(--bg-secondary); }
+
+        .reply-draft-box {
+            background: var(--bg-secondary);
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            padding: 16px;
+            white-space: pre-wrap;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .main-content { margin-left: 0; }
@@ -378,8 +468,73 @@
         </div>
         <div class="modal-body" id="modalBody"></div>
         <div style="text-align: right;">
+            <button class="btn-generate-reply" onclick="openReplyOptions()">
+                <i class="fas fa-reply"></i> 답장 초안 생성
+            </button>
             <button class="btn-reanalyze" onclick="reanalyzeMail()">
                 <i class="fas fa-sync-alt"></i> 재분석
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reply Options Modal -->
+<div class="modal-overlay" id="replyOptionsModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 class="modal-title">답장 초안 생성</h3>
+            <button class="modal-close" onclick="closeReplyOptions()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="option-group">
+                <label class="option-label">톤 선택</label>
+                <div class="radio-group" id="toneOptions">
+                    <span class="radio-option" data-value="FORMAL" onclick="selectTone(this)">정중한</span>
+                    <span class="radio-option selected" data-value="NEUTRAL" onclick="selectTone(this)">중립적</span>
+                    <span class="radio-option" data-value="FRIENDLY" onclick="selectTone(this)">친근한</span>
+                    <span class="radio-option" data-value="CONCISE" onclick="selectTone(this)">간결한</span>
+                </div>
+            </div>
+            <div class="option-group">
+                <label class="option-label">답장 유형</label>
+                <div class="radio-group" id="typeOptions">
+                    <span class="radio-option selected" data-value="ACKNOWLEDGE" onclick="selectType(this)">확인</span>
+                    <span class="radio-option" data-value="APPROVE" onclick="selectType(this)">승인</span>
+                    <span class="radio-option" data-value="DECLINE" onclick="selectType(this)">거절</span>
+                    <span class="radio-option" data-value="QUESTION" onclick="selectType(this)">질문</span>
+                    <span class="radio-option" data-value="REQUEST" onclick="selectType(this)">요청</span>
+                </div>
+            </div>
+            <div class="option-group">
+                <label class="option-label">추가 컨텍스트 (선택)</label>
+                <textarea class="context-input" id="additionalContext" placeholder="예: 금요일 오후에 미팅이 있어 목요일까지 검토 가능합니다."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeReplyOptions()">취소</button>
+            <button class="btn-primary" id="generateBtn" onclick="generateReply()">
+                <i class="fas fa-magic"></i> 생성하기
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reply Draft Modal -->
+<div class="modal-overlay" id="replyDraftModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 class="modal-title">생성된 답장 초안</h3>
+            <button class="modal-close" onclick="closeReplyDraft()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="reply-draft-box" id="replyDraftContent"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="openReplyOptions()">
+                <i class="fas fa-redo"></i> 다시 생성
+            </button>
+            <button class="btn-primary" onclick="copyReplyDraft()">
+                <i class="fas fa-copy"></i> 복사하기
             </button>
         </div>
     </div>
@@ -392,6 +547,9 @@
     let currentFilter = null;
     let totalPages = 0;
     let selectedMailId = null;
+    let selectedTone = 'NEUTRAL';
+    let selectedReplyType = 'ACKNOWLEDGE';
+    let currentReplyDraft = '';
 
     function handleLogout(event) {
         event.preventDefault();
@@ -593,6 +751,109 @@
 
     document.getElementById('mailModal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
+    });
+
+    // Reply Generation Functions
+    function openReplyOptions() {
+        closeModal();
+        document.getElementById('replyOptionsModal').classList.add('active');
+        // Reset selections
+        selectedTone = 'NEUTRAL';
+        selectedReplyType = 'ACKNOWLEDGE';
+        document.querySelectorAll('#toneOptions .radio-option').forEach(el => {
+            el.classList.toggle('selected', el.dataset.value === 'NEUTRAL');
+        });
+        document.querySelectorAll('#typeOptions .radio-option').forEach(el => {
+            el.classList.toggle('selected', el.dataset.value === 'ACKNOWLEDGE');
+        });
+        document.getElementById('additionalContext').value = '';
+    }
+
+    function closeReplyOptions() {
+        document.getElementById('replyOptionsModal').classList.remove('active');
+    }
+
+    function selectTone(el) {
+        document.querySelectorAll('#toneOptions .radio-option').forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedTone = el.dataset.value;
+    }
+
+    function selectType(el) {
+        document.querySelectorAll('#typeOptions .radio-option').forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedReplyType = el.dataset.value;
+    }
+
+    async function generateReply() {
+        if (!selectedMailId) return;
+
+        const accessToken = localStorage.getItem('accessToken');
+        const generateBtn = document.getElementById('generateBtn');
+        const additionalContext = document.getElementById('additionalContext').value;
+
+        try {
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 생성 중...';
+
+            const response = await fetch(`/dashboard/mail/api/${selectedMailId}/generate-reply`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tone: selectedTone,
+                    replyType: selectedReplyType,
+                    additionalContext: additionalContext || null
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to generate reply');
+
+            const data = await response.json();
+            currentReplyDraft = data.replyDraft;
+
+            closeReplyOptions();
+            document.getElementById('replyDraftContent').textContent = currentReplyDraft;
+            document.getElementById('replyDraftModal').classList.add('active');
+
+        } catch (error) {
+            console.error('Failed to generate reply:', error);
+            alert('답장 생성에 실패했습니다.');
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="fas fa-magic"></i> 생성하기';
+        }
+    }
+
+    function closeReplyDraft() {
+        document.getElementById('replyDraftModal').classList.remove('active');
+    }
+
+    async function copyReplyDraft() {
+        try {
+            await navigator.clipboard.writeText(currentReplyDraft);
+            alert('클립보드에 복사되었습니다.');
+        } catch (error) {
+            console.error('Failed to copy:', error);
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = currentReplyDraft;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('클립보드에 복사되었습니다.');
+        }
+    }
+
+    document.getElementById('replyOptionsModal').addEventListener('click', function(e) {
+        if (e.target === this) closeReplyOptions();
+    });
+
+    document.getElementById('replyDraftModal').addEventListener('click', function(e) {
+        if (e.target === this) closeReplyDraft();
     });
 
     document.addEventListener('DOMContentLoaded', function() {

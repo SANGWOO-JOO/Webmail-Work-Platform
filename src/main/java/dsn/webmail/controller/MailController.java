@@ -2,9 +2,12 @@ package dsn.webmail.controller;
 
 import dsn.webmail.dto.MailDtos.MailDetailResponse;
 import dsn.webmail.dto.MailDtos.MailListResponse;
+import dsn.webmail.dto.ReplyDtos.ReplyDraftResponse;
+import dsn.webmail.dto.ReplyDtos.ReplyGenerationRequest;
 import dsn.webmail.entity.MailCategory;
 import dsn.webmail.security.JwtTokenProvider;
 import dsn.webmail.service.MailListService;
+import dsn.webmail.service.ReplyGenerationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,6 +25,7 @@ public class MailController {
 
     private final MailListService mailListService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ReplyGenerationService replyGenerationService;
 
     // ========== View 엔드포인트 ==========
 
@@ -79,6 +83,22 @@ public class MailController {
         String token = authorization.replace("Bearer ", "");
         String email = jwtTokenProvider.getEmailFromToken(token);
         MailDetailResponse response = mailListService.reanalyzeMail(email, id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 답장 초안 생성 API
+     * JWT 인증 필요
+     */
+    @PostMapping("/api/{id}/generate-reply")
+    @ResponseBody
+    public ResponseEntity<ReplyDraftResponse> generateReply(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable Long id,
+            @RequestBody ReplyGenerationRequest request) {
+        String token = authorization.replace("Bearer ", "");
+        String email = jwtTokenProvider.getEmailFromToken(token);
+        ReplyDraftResponse response = replyGenerationService.generateReply(email, id, request);
         return ResponseEntity.ok(response);
     }
 }
