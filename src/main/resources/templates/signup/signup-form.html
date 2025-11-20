@@ -509,17 +509,35 @@
 
             <!-- Form -->
             <form th:action="@{/signup/request-code}" th:object="${requestCode}" method="post" id="signupForm">
+                <!-- Name Field -->
+                <div class="mb-4">
+                    <label for="name" class="form-label">이름</label>
+                    <input type="text"
+                           class="form-control-custom"
+                           id="name"
+                           th:field="*{name}"
+                           th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''"
+                           placeholder="홍길동"
+                           autocomplete="name"
+                           autofocus
+                           required>
+                    <div class="form-helper">실명을 입력해주세요</div>
+                    <div th:if="${#fields.hasErrors('name')}" class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span th:errors="*{name}"></span>
+                    </div>
+                </div>
+
                 <!-- Email Field -->
                 <div class="mb-4">
                     <label for="email" class="form-label">이메일 주소</label>
-                    <input type="email" 
+                    <input type="email"
                            class="form-control-custom"
                            id="email"
                            th:field="*{email}"
                            th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
                            placeholder="your@email.com"
                            autocomplete="email"
-                           autofocus
                            required>
                     <div class="form-helper">인증 코드를 받을 이메일을 입력해주세요</div>
                     <div th:if="${#fields.hasErrors('email')}" class="error-message">
@@ -635,6 +653,7 @@
 
         // Form validation
         const form = document.getElementById('signupForm');
+        const nameInput = document.getElementById('name');
         const emailInput = document.getElementById('email');
         const pop3PasswordInput = document.getElementById('pop3Password');
         const webPasswordInput = document.getElementById('webPassword');
@@ -642,7 +661,8 @@
         const submitBtn = document.getElementById('submitBtn');
 
         function validateForm() {
-            const isValid = emailInput.validity.valid &&
+            const isValid = nameInput.value.trim().length > 0 &&
+                          emailInput.validity.valid &&
                           pop3PasswordInput.value.length > 0 &&
                           webPasswordInput.value.length >= 8 &&
                           termsCheckbox.checked;
@@ -650,6 +670,7 @@
             submitBtn.disabled = !isValid;
         }
 
+        nameInput.addEventListener('input', validateForm);
         emailInput.addEventListener('input', validateForm);
         pop3PasswordInput.addEventListener('input', validateForm);
         webPasswordInput.addEventListener('input', validateForm);

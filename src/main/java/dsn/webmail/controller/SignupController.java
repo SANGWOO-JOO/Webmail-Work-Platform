@@ -49,7 +49,7 @@ public class SignupController {
                     content = @Content(schema = @Schema(implementation = RequestCode.class)))
             @Valid @org.springframework.web.bind.annotation.RequestBody RequestCode dto) {
 
-        signupService.requestCode(dto.email(), dto.pop3Password(), dto.webPassword());
+        signupService.requestCode(dto.name(), dto.email(), dto.pop3Password(), dto.webPassword());
         return ResponseEntity.ok(new MessageResponse("인증 코드가 발송되었습니다."));
     }
 

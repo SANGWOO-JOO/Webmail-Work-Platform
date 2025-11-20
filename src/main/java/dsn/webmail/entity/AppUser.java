@@ -20,6 +20,9 @@ public class AppUser {
     @Column(nullable = false, length = 200)
     private String email;
 
+    @Column(length = 100)
+    private String name;
+
     @Column(length = 400)
     private String encryptedPop3Password;
 
@@ -98,6 +101,14 @@ public class AppUser {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEncryptedPop3Password() {

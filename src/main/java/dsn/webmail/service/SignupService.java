@@ -46,7 +46,7 @@ public class SignupService {
     }
 
     @Transactional
-    public void requestCode(String email, String rawPop3Password, String rawWebPassword) {
+    public void requestCode(String name, String email, String rawPop3Password, String rawWebPassword) {
         // 1) 중복 이메일 방지(이미 ACTIVE면 거절)
         userRepo.findByEmail(email).ifPresent(u -> {
             if (u.getStatus() == AppUser.Status.ACTIVE) {
@@ -68,6 +68,7 @@ public class SignupService {
                 newUser.setEmail(email);
                 return newUser;
             });
+            user.setName(name);
             user.setEncryptedPop3Password(passwordCipher.encrypt(rawPop3Password));
 
             // 웹 로그인 패스워드 해시 저장

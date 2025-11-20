@@ -26,7 +26,7 @@ public class SignupWebController {
      */
     @GetMapping
     public String signupForm(Model model) {
-        model.addAttribute("requestCode", new RequestCode("", "", ""));
+        model.addAttribute("requestCode", new RequestCode("", "", "", ""));
         return "signup/signup-form";
     }
 
@@ -44,7 +44,7 @@ public class SignupWebController {
         }
 
         try {
-            signupService.requestCode(requestCode.email(), requestCode.pop3Password(), requestCode.webPassword());
+            signupService.requestCode(requestCode.name(), requestCode.email(), requestCode.pop3Password(), requestCode.webPassword());
 
             // 인증 코드 발송 성공 시 검증 페이지로 리다이렉트
             redirectAttributes.addFlashAttribute("email", requestCode.email());

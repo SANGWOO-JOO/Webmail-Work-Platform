@@ -10,6 +10,11 @@ public class SignupDtos {
 
     @Schema(description = "인증 코드 요청 DTO")
     public record RequestCode(
+            @Schema(description = "사용자 이름", example = "홍길동")
+            @NotBlank(message = "이름은 필수입니다")
+            @Size(min = 1, max = 100, message = "이름은 1-100자 사이여야 합니다")
+            String name,
+
             @Schema(description = "가입 이메일", example = "johndoe@dsntech.com")
             @NotBlank(message = "이메일은 필수입니다")
             @Email(message = "올바른 이메일 형식이 아닙니다")
