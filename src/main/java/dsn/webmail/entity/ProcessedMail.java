@@ -35,6 +35,18 @@ public class ProcessedMail {
     @Column(columnDefinition = "LONGTEXT")
     private String content;
 
+    // LLM 분석 결과 필드
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private MailCategory category;
+
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
+    private LocalDateTime analyzedAt;
+
+    private Float categoryConfidence;
+
     public ProcessedMail() {}
 
     public ProcessedMail(Long userId, String messageId) {
@@ -104,5 +116,37 @@ public class ProcessedMail {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public MailCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(MailCategory category) {
+        this.category = category;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public LocalDateTime getAnalyzedAt() {
+        return analyzedAt;
+    }
+
+    public void setAnalyzedAt(LocalDateTime analyzedAt) {
+        this.analyzedAt = analyzedAt;
+    }
+
+    public Float getCategoryConfidence() {
+        return categoryConfidence;
+    }
+
+    public void setCategoryConfidence(Float categoryConfidence) {
+        this.categoryConfidence = categoryConfidence;
     }
 }

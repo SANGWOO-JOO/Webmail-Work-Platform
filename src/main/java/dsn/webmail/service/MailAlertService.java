@@ -23,17 +23,20 @@ public class MailAlertService {
     private final ProcessedMailRepository processedMailRepo;
     private final PasswordCipher passwordCipher;
     private final EventExtractionService eventExtractionService;
+    private final MailAnalyzerService mailAnalyzerService;
 
     public MailAlertService(MailReceiver mailReceiver,
                             SlackBotClient slackBotClient,
                             ProcessedMailRepository processedMailRepo,
                             PasswordCipher passwordCipher,
-                            EventExtractionService eventExtractionService) {
+                            EventExtractionService eventExtractionService,
+                            MailAnalyzerService mailAnalyzerService) {
         this.mailReceiver = mailReceiver;
         this.slackBotClient = slackBotClient;
         this.processedMailRepo = processedMailRepo;
         this.passwordCipher = passwordCipher;
         this.eventExtractionService = eventExtractionService;
+        this.mailAnalyzerService = mailAnalyzerService;
     }
 
     @Transactional
@@ -131,6 +134,9 @@ public class MailAlertService {
         );
         processedMailRepo.save(processed);
         log.debug("Saved processed mail record: {}", mail.messageId());
+
+        // 메일 분류 및 요약 (비동기)
+        mailAnalyzerService.analyzeMailAsync(processed.getId());
     }
 
     private void extractEvent(AppUser user, MailSummary mail) {
