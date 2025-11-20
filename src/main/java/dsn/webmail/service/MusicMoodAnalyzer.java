@@ -22,6 +22,11 @@ public interface MusicMoodAnalyzer {
         acoustic, indie, k-pop, ambient, chill, study, sleep, work-out,
         party, romance, sad, happy
 
+        중요: 사용자가 특정 아티스트를 언급한 경우, 해당 아티스트의 영문 이름을
+        artists 목록에 포함해주세요. 예: "태연" -> "Taeyeon", "윤하" -> "Younha",
+        "다비치" -> "Davichi", "아이유" -> "IU", "BTS" -> "BTS"
+        아티스트가 언급되지 않은 경우 artists는 빈 목록으로 두세요.
+
         사용자의 감정과 상황을 파악하여 가장 적합한 음악 특성을 추천해주세요.
         """)
     MoodProfile analyzeMood(@V("prompt") String prompt);
@@ -39,6 +44,11 @@ public interface MusicMoodAnalyzer {
         - 업무 요청이 많았다면: 편안한 음악으로 스트레스 해소
         - 긍정적인 내용이 많았다면: 기분을 유지할 수 있는 밝은 음악
         - 회의가 많았다면: 조용하고 잔잔한 음악으로 휴식
+
+        중요: 반드시 k-pop 또는 pop 장르 위주로 추천해주세요.
+        한국 또는 미국 아티스트의 음악만 추천합니다.
+        artists 목록에는 태연, 아이유, BTS 등 인기 한국/미국 아티스트를 영문으로 포함해주세요.
+        예: IU, Taeyeon, BTS, BLACKPINK, Taylor Swift, Ed Sheeran
         """)
     MoodProfile analyzeMailsAndRecommend(@V("mailSummaries") String mailSummaries);
 }

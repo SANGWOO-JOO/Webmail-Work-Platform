@@ -20,6 +20,9 @@ public record MoodProfile(
     @Description("추천 장르 목록 (최대 5개)")
     List<String> genres,
 
+    @Description("사용자가 언급한 아티스트 이름 목록")
+    List<String> artists,
+
     @Description("추천 이유 설명")
     String reasoning
 ) {}

@@ -57,4 +57,22 @@ public class MusicController {
         MusicRecommendationResponse response = musicRecommendationService.recommendByTodayMails(email, limit);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 필터 기반 음악 검색
+     */
+    @PostMapping("/api/music/search")
+    @ResponseBody
+    public ResponseEntity<MusicRecommendationResponse> searchByFilter(
+            @RequestBody Map<String, Object> request) {
+
+        String artist = (String) request.getOrDefault("artist", "");
+        String genre = (String) request.getOrDefault("genre", "");
+        String mood = (String) request.getOrDefault("mood", "");
+        String country = (String) request.getOrDefault("country", "KR");
+        int limit = request.containsKey("limit") ? (int) request.get("limit") : 10;
+
+        MusicRecommendationResponse response = musicRecommendationService.searchByFilter(artist, genre, mood, country, limit);
+        return ResponseEntity.ok(response);
+    }
 }

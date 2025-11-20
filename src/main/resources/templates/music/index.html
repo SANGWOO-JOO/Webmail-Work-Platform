@@ -227,6 +227,47 @@
 
         .mail-based-desc { font-size: 0.875rem; opacity: 0.9; }
 
+        /* Tabs */
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid #e5e8eb;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: var(--bg-secondary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         /* Results */
         .results-card {
             background: white;
@@ -336,6 +377,50 @@
             color: var(--text-secondary);
         }
 
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e8eb;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0 8px;
+        }
+
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .main-content { margin-left: 0; }
@@ -387,51 +472,128 @@
         </header>
 
         <div class="content">
-            <!-- Prompt Input -->
-            <div class="prompt-card">
-                <h2 class="prompt-title">
-                    <i class="fas fa-magic"></i>
-                    지금 기분이 어떠세요?
-                </h2>
-                <textarea class="prompt-input" id="promptInput"
-                    placeholder="예: 오늘 하루 너무 힘들었어. 위로가 되는 음악 추천해줘"></textarea>
-                <button class="btn-recommend" id="recommendBtn" onclick="getRecommendation()">
-                    <i class="fas fa-music"></i>
-                    추천받기
+            <!-- Tab Navigation -->
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="switchTab('ai')">
+                    <i class="fas fa-magic"></i> AI 추천
+                </button>
+                <button class="tab-btn" onclick="switchTab('search')">
+                    <i class="fas fa-search"></i> 직접 검색
                 </button>
             </div>
 
-            <!-- Quick Buttons -->
-            <div class="quick-buttons">
-                <button class="quick-btn" onclick="quickRecommend('happy')">
-                    <span class="emoji">😊</span>
-                    <span class="label">행복</span>
-                </button>
-                <button class="quick-btn" onclick="quickRecommend('comfort')">
-                    <span class="emoji">😢</span>
-                    <span class="label">위로</span>
-                </button>
-                <button class="quick-btn" onclick="quickRecommend('energy')">
-                    <span class="emoji">🔥</span>
-                    <span class="label">에너지</span>
-                </button>
-                <button class="quick-btn" onclick="quickRecommend('relax')">
-                    <span class="emoji">😴</span>
-                    <span class="label">휴식</span>
-                </button>
-                <button class="quick-btn" onclick="quickRecommend('focus')">
-                    <span class="emoji">🎯</span>
-                    <span class="label">집중</span>
-                </button>
+            <!-- AI Recommendation Tab -->
+            <div id="aiTab" class="tab-content active">
+                <!-- Mail Based Recommendation -->
+                <div class="mail-based-card" onclick="getMailBasedRecommendation()">
+                    <h3 class="mail-based-title">
+                        <i class="fas fa-envelope"></i>
+                        오늘의 메일 기반 추천
+                    </h3>
+                    <p class="mail-based-desc">오늘 받은 메일을 분석하여 맞춤 음악을 추천해드립니다</p>
+                </div>
+
+                <!-- Quick Mood Buttons -->
+                <div class="prompt-card">
+                    <h2 class="prompt-title">
+                        <i class="fas fa-heart"></i>
+                        지금 기분은?
+                    </h2>
+                    <div class="quick-buttons" style="margin-bottom: 0;">
+                        <button class="quick-btn" onclick="quickRecommend('happy')">
+                            <span class="emoji">😊</span>
+                            <span class="label">행복</span>
+                        </button>
+                        <button class="quick-btn" onclick="quickRecommend('comfort')">
+                            <span class="emoji">😢</span>
+                            <span class="label">위로</span>
+                        </button>
+                        <button class="quick-btn" onclick="quickRecommend('energy')">
+                            <span class="emoji">🔥</span>
+                            <span class="label">에너지</span>
+                        </button>
+                        <button class="quick-btn" onclick="quickRecommend('relax')">
+                            <span class="emoji">😴</span>
+                            <span class="label">휴식</span>
+                        </button>
+                        <button class="quick-btn" onclick="quickRecommend('focus')">
+                            <span class="emoji">🎯</span>
+                            <span class="label">집중</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Prompt -->
+                <div class="prompt-card">
+                    <h2 class="prompt-title">
+                        <i class="fas fa-comment-dots"></i>
+                        직접 요청하기
+                    </h2>
+                    <textarea class="prompt-input" id="promptInput"
+                        placeholder="예: 오늘 하루 너무 힘들었어. 위로가 되는 음악 추천해줘&#10;또는: 윤하, 태연 스타일의 발라드 추천"></textarea>
+                    <button class="btn-recommend" id="recommendBtn" onclick="getRecommendation()">
+                        <i class="fas fa-music"></i>
+                        추천받기
+                    </button>
+                </div>
             </div>
 
-            <!-- Mail Based Recommendation -->
-            <div class="mail-based-card" onclick="getMailBasedRecommendation()">
-                <h3 class="mail-based-title">
-                    <i class="fas fa-envelope"></i>
-                    오늘의 메일 기반 추천
-                </h3>
-                <p class="mail-based-desc">오늘 받은 메일을 분석하여 맞춤 음악을 추천해드립니다</p>
+            <!-- Search Tab -->
+            <div id="searchTab" class="tab-content">
+                <div class="prompt-card">
+                    <h2 class="prompt-title">
+                        <i class="fas fa-filter"></i>
+                        필터로 검색
+                    </h2>
+                    <div class="filter-row" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="font-size: 0.875rem; font-weight: 500; margin-bottom: 8px; display: block;">아티스트</label>
+                            <input type="text" id="artistInput" class="prompt-input" style="min-height: auto; padding: 12px;"
+                                   placeholder="예: BTS, IU, Taeyeon">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="font-size: 0.875rem; font-weight: 500; margin-bottom: 8px; display: block;">장르</label>
+                            <select id="genreSelect" class="prompt-input" style="min-height: auto; padding: 12px;">
+                                <option value="">전체</option>
+                                <option value="k-pop">K-Pop</option>
+                                <option value="pop">Pop</option>
+                                <option value="ballad">발라드</option>
+                                <option value="dance">댄스</option>
+                                <option value="hip-hop">Hip-Hop</option>
+                                <option value="r&b">R&B</option>
+                                <option value="rock">Rock</option>
+                                <option value="jazz">Jazz</option>
+                                <option value="classical">Classical</option>
+                                <option value="indie">Indie</option>
+                                <option value="electronic">Electronic</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="font-size: 0.875rem; font-weight: 500; margin-bottom: 8px; display: block;">분위기</label>
+                            <select id="moodSelect" class="prompt-input" style="min-height: auto; padding: 12px;">
+                                <option value="">전체</option>
+                                <option value="happy">신나는</option>
+                                <option value="sad">슬픈</option>
+                                <option value="chill">잔잔한</option>
+                                <option value="energetic">에너지틱</option>
+                                <option value="romantic">로맨틱</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 120px;">
+                            <label style="font-size: 0.875rem; font-weight: 500; margin-bottom: 8px; display: block;">국가</label>
+                            <select id="countrySelect" class="prompt-input" style="min-height: auto; padding: 12px;">
+                                <option value="KR">한국</option>
+                                <option value="US">미국</option>
+                                <option value="JP">일본</option>
+                                <option value="GB">영국</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn-recommend" onclick="searchByFilter()">
+                        <i class="fas fa-search"></i>
+                        검색하기
+                    </button>
+                </div>
             </div>
 
             <!-- Results -->
@@ -440,8 +602,9 @@
                     <div class="analysis-title">AI 분석 결과</div>
                     <div class="analysis-text" id="analysisText"></div>
                 </div>
-                <h3 class="tracks-title">추천 트랙</h3>
+                <h3 class="tracks-title">추천 트랙 <span id="tracksCount" style="font-size: 0.875rem; color: var(--text-secondary); font-weight: normal;"></span></h3>
                 <div id="tracksList"></div>
+                <div id="pagination" class="pagination" style="display: none;"></div>
             </div>
         </div>
     </main>
@@ -457,6 +620,16 @@
         window.location.href = '/login';
     }
 
+    function switchTab(tab) {
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.closest('.tab-btn').classList.add('active');
+
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(tab + 'Tab').classList.add('active');
+    }
+
     const quickPrompts = {
         happy: '기분 좋은 하루를 더 신나게 만들어줄 밝은 음악',
         comfort: '힘든 하루를 위로해줄 잔잔한 음악',
@@ -468,6 +641,48 @@
     function quickRecommend(type) {
         document.getElementById('promptInput').value = quickPrompts[type];
         getRecommendation();
+    }
+
+    async function searchByFilter() {
+        const artist = document.getElementById('artistInput').value.trim();
+        const genre = document.getElementById('genreSelect').value;
+        const mood = document.getElementById('moodSelect').value;
+        const country = document.getElementById('countrySelect').value;
+
+        if (!artist && !genre && !mood) {
+            alert('최소 하나의 필터를 선택해주세요.');
+            return;
+        }
+
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+
+        const resultsCard = document.getElementById('resultsCard');
+        resultsCard.classList.add('active');
+        document.getElementById('analysisText').textContent = '검색 중...';
+        document.getElementById('tracksList').innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>';
+
+        try {
+            const response = await fetch('/api/music/search', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ artist, genre, mood, country, limit: 50 })
+            });
+
+            if (!response.ok) throw new Error('검색 실패');
+
+            const data = await response.json();
+            displayResults(data);
+        } catch (error) {
+            console.error('검색 오류:', error);
+            alert('음악 검색에 실패했습니다.');
+        }
     }
 
     async function getRecommendation() {
@@ -494,7 +709,7 @@
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ prompt, limit: 10 })
+                body: JSON.stringify({ prompt, limit: 50 })
             });
 
             if (!response.ok) throw new Error('추천 실패');
@@ -523,7 +738,7 @@
         document.getElementById('tracksList').innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i></div>';
 
         try {
-            const response = await fetch('/api/music/recommend/by-mail?limit=10', {
+            const response = await fetch('/api/music/recommend/by-mail?limit=50', {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
@@ -540,6 +755,11 @@
         }
     }
 
+    // Pagination state
+    let allTracks = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
     function displayResults(data) {
         const resultsCard = document.getElementById('resultsCard');
         resultsCard.classList.add('active');
@@ -548,14 +768,32 @@
         document.getElementById('analysisText').textContent = data.analysis.reasoning;
 
         // 트랙 목록
-        const tracksList = document.getElementById('tracksList');
-
         if (!data.tracks || data.tracks.length === 0) {
-            tracksList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">추천 트랙이 없습니다.</p>';
+            document.getElementById('tracksList').innerHTML = '<p style="text-align: center; color: var(--text-secondary);">추천 트랙이 없습니다.</p>';
+            document.getElementById('pagination').style.display = 'none';
+            document.getElementById('tracksCount').textContent = '';
             return;
         }
 
-        tracksList.innerHTML = data.tracks.map(track => `
+        // Store all tracks and reset page
+        allTracks = data.tracks;
+        currentPage = 1;
+        document.getElementById('tracksCount').textContent = `(총 ${allTracks.length}곡)`;
+
+        // Render first page
+        renderPage(currentPage);
+
+        // 결과로 스크롤
+        resultsCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderPage(page) {
+        const tracksList = document.getElementById('tracksList');
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageTracks = allTracks.slice(start, end);
+
+        tracksList.innerHTML = pageTracks.map(track => `
             <div class="track-card">
                 <img class="track-image" src="${track.albumImageUrl || ''}" alt="${track.album}"
                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 60%22><rect fill=%22%23e5e8eb%22 width=%2260%22 height=%2260%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%236B7684%22 font-size=%2220%22>♪</text></svg>'">
@@ -570,8 +808,67 @@
             </div>
         `).join('');
 
-        // 결과로 스크롤
-        resultsCard.scrollIntoView({ behavior: 'smooth' });
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(allTracks.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+
+        if (totalPages <= 1) {
+            pagination.style.display = 'none';
+            return;
+        }
+
+        pagination.style.display = 'flex';
+
+        let html = `
+            <button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        `;
+
+        // Page numbers
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage < maxVisiblePages - 1) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        if (startPage > 1) {
+            html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+            if (startPage > 2) html += `<span class="page-info">...</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<span class="page-info">...</span>`;
+            html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+        }
+
+        html += `
+            <button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        `;
+
+        pagination.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        const totalPages = Math.ceil(allTracks.length / itemsPerPage);
+        if (page < 1 || page > totalPages) return;
+
+        currentPage = page;
+        renderPage(page);
+
+        // Scroll to results
+        document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
     }
 
     let currentAudio = null;
