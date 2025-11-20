@@ -9,6 +9,8 @@ import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -135,8 +137,14 @@ public class MailAlertService {
         processedMailRepo.save(processed);
         log.debug("Saved processed mail record: {}", mail.messageId());
 
-        // 메일 분류 및 요약 (비동기)
-        mailAnalyzerService.analyzeMailAsync(processed.getId());
+        // 메일 분류 및 요약 (트랜잭션 커밋 후 비동기 실행)
+        Long mailId = processed.getId();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                mailAnalyzerService.analyzeMailAsync(mailId);
+            }
+        });
     }
 
     private void extractEvent(AppUser user, MailSummary mail) {

@@ -611,9 +611,15 @@
         `).join('');
     }
 
+    function formatSummary(summary) {
+        // "1. " 형식을 줄바꿈으로 변환
+        return summary.replace(/(\d+)\.\s/g, '\n$1. ').trim();
+    }
+
     function truncateSummary(summary) {
-        const lines = summary.split('\n').slice(0, 3);
-        return lines.join('\n') + (summary.split('\n').length > 3 ? '...' : '');
+        const formatted = formatSummary(summary);
+        const lines = formatted.split('\n').slice(0, 3);
+        return lines.join('\n') + (formatted.split('\n').length > 3 ? '...' : '');
     }
 
     function renderPagination(data) {
@@ -690,7 +696,7 @@
                 ${mail.summary ? `
                 <div class="detail-section">
                     <div class="detail-label">요약</div>
-                    <div class="detail-value" style="white-space: pre-line;">${mail.summary}</div>
+                    <div class="detail-value" style="white-space: pre-line;">${formatSummary(mail.summary)}</div>
                 </div>
                 ` : ''}
                 <div class="detail-section" style="border-bottom: none;">
