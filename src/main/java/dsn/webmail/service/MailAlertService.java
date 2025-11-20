@@ -139,12 +139,18 @@ public class MailAlertService {
 
         // 메일 분류 및 요약 (트랜잭션 커밋 후 비동기 실행)
         Long mailId = processed.getId();
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                mailAnalyzerService.analyzeMailAsync(mailId);
-            }
-        });
+        log.info("메일 분석 스케줄링: mailId={}, subject={}", mailId, mail.subject());
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    mailAnalyzerService.analyzeMailAsync(mailId);
+                }
+            });
+        } else {
+            // 트랜잭션이 없는 경우 바로 실행
+            mailAnalyzerService.analyzeMailAsync(mailId);
+        }
     }
 
     private void extractEvent(AppUser user, MailSummary mail) {
