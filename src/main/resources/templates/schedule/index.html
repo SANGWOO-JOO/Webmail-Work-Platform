@@ -525,6 +525,181 @@
             color: var(--text-secondary);
         }
 
+        /* Add Button */
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn-save:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-cancel {
+            background: white;
+            color: var(--text-secondary);
+            border: 1px solid #e5e8eb;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-secondary);
+        }
+
+        .btn-edit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        .btn-edit:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Priority Badge */
+        .priority-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .priority-HIGH {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-MEDIUM {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-LOW {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        /* Category Badge */
+        .category-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        /* Manual Badge */
+        .manual-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        /* Color Picker */
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: var(--text-primary);
+        }
+
         /* Mobile */
         @media (max-width: 768px) {
             .sidebar {
@@ -602,6 +777,10 @@
         <header class="header">
             <h1 class="header-title">일정</h1>
             <div class="header-actions">
+                <button class="btn-add" onclick="openCreateModal()">
+                    <i class="fas fa-plus"></i>
+                    일정 추가
+                </button>
                 <a href="#" class="btn-logout" onclick="handleLogout(event)">
                     <i class="fas fa-sign-out-alt"></i>
                     로그아웃
@@ -648,8 +827,87 @@
             <!-- Event details will be inserted here -->
         </div>
         <div class="modal-footer">
+            <button class="btn-edit" onclick="openEditModal()">
+                <i class="fas fa-edit"></i> 수정
+            </button>
             <button class="btn-delete" onclick="deleteEvent()">
                 <i class="fas fa-trash"></i> 삭제
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="formModalTitle">새 일정 만들기</h3>
+            <button class="modal-close" onclick="closeFormModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="eventForm" onsubmit="saveEvent(event)">
+                <div class="form-group">
+                    <label class="form-label required">제목</label>
+                    <input type="text" class="form-input" id="eventTitle" required maxlength="100" placeholder="일정 제목">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">날짜</label>
+                        <input type="date" class="form-input" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">시간</label>
+                        <input type="time" class="form-input" id="eventTime" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">카테고리</label>
+                        <select class="form-select" id="eventCategory">
+                            <option value="">선택</option>
+                            <option value="개발">개발</option>
+                            <option value="회의">회의</option>
+                            <option value="배포">배포</option>
+                            <option value="리뷰">리뷰</option>
+                            <option value="학습">학습</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">우선순위</label>
+                        <select class="form-select" id="eventPriority">
+                            <option value="">선택</option>
+                            <option value="HIGH">높음</option>
+                            <option value="MEDIUM">중간</option>
+                            <option value="LOW">낮음</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">색상</label>
+                    <div class="color-picker" id="colorPicker">
+                        <div class="color-option selected" data-color="#3182F6" style="background: #3182F6;" title="파란색"></div>
+                        <div class="color-option" data-color="#10B981" style="background: #10B981;" title="초록색"></div>
+                        <div class="color-option" data-color="#F59E0B" style="background: #F59E0B;" title="노란색"></div>
+                        <div class="color-option" data-color="#EF4444" style="background: #EF4444;" title="빨간색"></div>
+                        <div class="color-option" data-color="#8B5CF6" style="background: #8B5CF6;" title="보라색"></div>
+                        <div class="color-option" data-color="#6B7684" style="background: #6B7684;" title="회색"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">관련 링크</label>
+                    <input type="url" class="form-input" id="eventLink" placeholder="https://github.com/...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">설명</label>
+                    <textarea class="form-textarea" id="eventDescription" maxlength="500" placeholder="일정 상세 설명"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeFormModal()">취소</button>
+            <button class="btn-save" onclick="saveEvent(event)">
+                <i class="fas fa-save"></i> 저장
             </button>
         </div>
     </div>
@@ -665,6 +923,9 @@
     let events = [];
     let holidays = [];
     let selectedEventId = null;
+    let selectedEventData = null;
+    let isEditMode = false;
+    let selectedColor = '#3182F6';
 
     // Logout Handler
     function handleLogout(event) {
@@ -806,7 +1067,8 @@
             html += `<div class="day-events">`;
 
             dayEvents.forEach(event => {
-                html += `<div class="event-dot" onclick="showEventDetail(${event.id})">${event.title}</div>`;
+                const eventColor = event.color || '#3182F6';
+                html += `<div class="event-dot" style="background: ${eventColor};" onclick="showEventDetail(${event.id})">${event.title}</div>`;
             });
 
             html += `</div></div>`;
@@ -866,28 +1128,67 @@
             }
 
             const event = await response.json();
+            selectedEventData = event;
 
             document.getElementById('modalTitle').textContent = event.title || '일정';
 
-            const confidencePercent = (event.confidence || 0) * 100;
-
             const hasMailInfo = event.mailSubject || event.mailFromAddress;
+            const isManual = event.isManual;
 
-            document.getElementById('modalBody').innerHTML = `
+            let detailHtml = `
                 <div class="event-detail">
                     <div class="event-detail-icon"><i class="fas fa-clock"></i></div>
                     <div class="event-detail-content">
                         <div class="event-detail-label">일시</div>
                         <div class="event-detail-value">${event.dateTime || '-'}</div>
                     </div>
-                </div>
+                </div>`;
+
+            // Category & Priority
+            if (event.category || event.priority) {
+                detailHtml += `
                 <div class="event-detail">
-                    <div class="event-detail-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="event-detail-icon"><i class="fas fa-tag"></i></div>
                     <div class="event-detail-content">
-                        <div class="event-detail-label">장소</div>
-                        <div class="event-detail-value">${event.location || '-'}</div>
+                        <div class="event-detail-label">분류</div>
+                        <div class="event-detail-value">
+                            ${event.category ? `<span class="category-badge">${event.category}</span>` : ''}
+                            ${event.priority ? `<span class="priority-badge priority-${event.priority}">${event.priority}</span>` : ''}
+                        </div>
                     </div>
-                </div>
+                </div>`;
+            }
+
+            // Description
+            if (event.description) {
+                detailHtml += `
+                <div class="event-detail">
+                    <div class="event-detail-icon"><i class="fas fa-align-left"></i></div>
+                    <div class="event-detail-content">
+                        <div class="event-detail-label">설명</div>
+                        <div class="event-detail-value">${event.description}</div>
+                    </div>
+                </div>`;
+            }
+
+            // Related Link
+            if (event.relatedLink) {
+                detailHtml += `
+                <div class="event-detail">
+                    <div class="event-detail-icon"><i class="fas fa-link"></i></div>
+                    <div class="event-detail-content">
+                        <div class="event-detail-label">관련 링크</div>
+                        <div class="event-detail-value">
+                            <a href="${event.relatedLink}" target="_blank" style="color: var(--primary);">${event.relatedLink}</a>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // AI Confidence (only for AI-extracted events)
+            if (!isManual && event.confidence) {
+                const confidencePercent = (event.confidence || 0) * 100;
+                detailHtml += `
                 <div class="event-detail">
                     <div class="event-detail-icon"><i class="fas fa-robot"></i></div>
                     <div class="event-detail-content">
@@ -897,8 +1198,23 @@
                             <div class="confidence-fill" style="width: ${confidencePercent}%"></div>
                         </div>
                     </div>
-                </div>
-                ${hasMailInfo ? `
+                </div>`;
+            }
+
+            // Manual badge
+            if (isManual) {
+                detailHtml += `
+                <div class="event-detail">
+                    <div class="event-detail-icon"><i class="fas fa-user-edit"></i></div>
+                    <div class="event-detail-content">
+                        <div class="event-detail-value"><span class="manual-badge">수동 생성 일정</span></div>
+                    </div>
+                </div>`;
+            }
+
+            // Mail info toggle
+            if (hasMailInfo) {
+                detailHtml += `
                 <div class="mail-toggle">
                     <button class="mail-toggle-btn" onclick="toggleMailInfo()">
                         <i class="fas fa-chevron-right" id="mailToggleIcon"></i>
@@ -916,10 +1232,10 @@
                             <span class="mail-info-value">${event.mailFromAddress || '-'}</span>
                         </div>
                     </div>
-                </div>
-                ` : ''}
-            `;
+                </div>`;
+            }
 
+            document.getElementById('modalBody').innerHTML = detailHtml;
             document.getElementById('eventModal').classList.add('active');
         } catch (error) {
             console.error('Failed to load event detail:', error);
@@ -984,9 +1300,150 @@
         }
     });
 
+    document.getElementById('formModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeFormModal();
+        }
+    });
+
+    // Open Create Modal
+    function openCreateModal() {
+        isEditMode = false;
+        document.getElementById('formModalTitle').textContent = '새 일정 만들기';
+
+        // Reset form
+        document.getElementById('eventTitle').value = '';
+        document.getElementById('eventDate').value = '';
+        document.getElementById('eventTime').value = '';
+        document.getElementById('eventCategory').value = '';
+        document.getElementById('eventPriority').value = '';
+        document.getElementById('eventLink').value = '';
+        document.getElementById('eventDescription').value = '';
+
+        // Reset color picker
+        selectedColor = '#3182F6';
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.classList.toggle('selected', opt.dataset.color === selectedColor);
+        });
+
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    // Open Edit Modal
+    function openEditModal() {
+        if (!selectedEventData) return;
+
+        isEditMode = true;
+        document.getElementById('formModalTitle').textContent = '일정 수정';
+
+        // Fill form with current data
+        document.getElementById('eventTitle').value = selectedEventData.title || '';
+
+        // Parse dateTime "2025-11-25 15:00"
+        if (selectedEventData.dateTime) {
+            const [date, time] = selectedEventData.dateTime.split(' ');
+            document.getElementById('eventDate').value = date;
+            document.getElementById('eventTime').value = time;
+        }
+
+        document.getElementById('eventCategory').value = selectedEventData.category || '';
+        document.getElementById('eventPriority').value = selectedEventData.priority || '';
+        document.getElementById('eventLink').value = selectedEventData.relatedLink || '';
+        document.getElementById('eventDescription').value = selectedEventData.description || '';
+
+        // Set color picker
+        selectedColor = selectedEventData.color || '#3182F6';
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.classList.toggle('selected', opt.dataset.color === selectedColor);
+        });
+
+        // Close detail modal and open form modal
+        closeModal();
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    // Close Form Modal
+    function closeFormModal() {
+        document.getElementById('formModal').classList.remove('active');
+    }
+
+    // Save Event (Create or Update)
+    async function saveEvent(e) {
+        e.preventDefault();
+
+        const title = document.getElementById('eventTitle').value.trim();
+        const date = document.getElementById('eventDate').value;
+        const time = document.getElementById('eventTime').value;
+
+        if (!title || !date || !time) {
+            alert('제목, 날짜, 시간은 필수입니다.');
+            return;
+        }
+
+        const dateTime = `${date} ${time}`;
+
+        const eventData = {
+            title: title,
+            dateTime: dateTime,
+            description: document.getElementById('eventDescription').value.trim() || null,
+            category: document.getElementById('eventCategory').value || null,
+            priority: document.getElementById('eventPriority').value || null,
+            relatedLink: document.getElementById('eventLink').value.trim() || null,
+            color: selectedColor
+        };
+
+        const accessToken = localStorage.getItem('accessToken');
+
+        try {
+            let response;
+            if (isEditMode && selectedEventId) {
+                // Update
+                response = await fetch(`/schedule/api/events/${selectedEventId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(eventData)
+                });
+            } else {
+                // Create
+                response = await fetch('/schedule/api/events', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(eventData)
+                });
+            }
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || '저장 실패');
+            }
+
+            closeFormModal();
+            loadData();
+            alert(isEditMode ? '일정이 수정되었습니다.' : '일정이 생성되었습니다.');
+        } catch (error) {
+            console.error('Failed to save event:', error);
+            alert('일정 저장에 실패했습니다: ' + error.message);
+        }
+    }
+
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
         loadUserInfo();
+
+        // Color picker click handler
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedColor = this.dataset.color;
+            });
+        });
     });
 </script>
 </body>

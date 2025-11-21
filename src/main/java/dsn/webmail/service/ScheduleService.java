@@ -1,7 +1,9 @@
 package dsn.webmail.service;
 
+import dsn.webmail.dto.ScheduleDtos.CreateEventRequest;
 import dsn.webmail.dto.ScheduleDtos.ScheduleEventResponse;
 import dsn.webmail.dto.ScheduleDtos.ScheduleListResponse;
+import dsn.webmail.dto.ScheduleDtos.UpdateEventRequest;
 import dsn.webmail.entity.AppUser;
 import dsn.webmail.entity.MailEvent;
 import dsn.webmail.repository.AppUserRepository;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -72,6 +75,59 @@ public class ScheduleService {
         log.info("일정 삭제: userId={}, eventId={}", user.getId(), eventId);
     }
 
+    /**
+     * 일정 생성 (수동)
+     */
+    @Transactional
+    public ScheduleEventResponse createSchedule(String email, CreateEventRequest request) {
+        AppUser user = appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + email));
+
+        MailEvent event = MailEvent.builder()
+                .user(user)
+                .title(request.title())
+                .dateTime(request.dateTime())
+                .description(request.description())
+                .category(request.category())
+                .priority(request.priority())
+                .relatedLink(request.relatedLink())
+                .color(request.color() != null ? request.color() : "#3182F6")
+                .isManual(true)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        MailEvent savedEvent = mailEventRepository.save(event);
+        log.info("일정 생성: userId={}, eventId={}, title={}", user.getId(), savedEvent.getId(), savedEvent.getTitle());
+
+        return toEventResponse(savedEvent);
+    }
+
+    /**
+     * 일정 수정
+     */
+    @Transactional
+    public ScheduleEventResponse updateSchedule(String email, Long eventId, UpdateEventRequest request) {
+        AppUser user = appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + email));
+
+        MailEvent event = mailEventRepository.findByIdAndUserId(eventId, user.getId())
+                .orElseThrow(() -> new RuntimeException("일정을 찾을 수 없습니다: " + eventId));
+
+        event.setTitle(request.title());
+        event.setDateTime(request.dateTime());
+        event.setDescription(request.description());
+        event.setCategory(request.category());
+        event.setPriority(request.priority());
+        event.setRelatedLink(request.relatedLink());
+        event.setColor(request.color());
+        event.setUpdatedAt(LocalDateTime.now());
+
+        MailEvent updatedEvent = mailEventRepository.save(event);
+        log.info("일정 수정: userId={}, eventId={}, title={}", user.getId(), updatedEvent.getId(), updatedEvent.getTitle());
+
+        return toEventResponse(updatedEvent);
+    }
+
     private ScheduleEventResponse toEventResponseWithMailInfo(Object[] result) {
         MailEvent event = (MailEvent) result[0];
         String mailSubject = (String) result[1];
@@ -85,7 +141,32 @@ public class ScheduleService {
                 event.getConfidence(),
                 event.getSourceMessageId(),
                 mailSubject,
-                mailFromAddress
+                mailFromAddress,
+                event.getIsManual(),
+                event.getDescription(),
+                event.getCategory(),
+                event.getPriority(),
+                event.getRelatedLink(),
+                event.getColor()
+        );
+    }
+
+    private ScheduleEventResponse toEventResponse(MailEvent event) {
+        return new ScheduleEventResponse(
+                event.getId(),
+                event.getTitle(),
+                event.getDateTime(),
+                event.getLocation(),
+                event.getConfidence(),
+                event.getSourceMessageId(),
+                null,  // mailSubject
+                null,  // mailFromAddress
+                event.getIsManual(),
+                event.getDescription(),
+                event.getCategory(),
+                event.getPriority(),
+                event.getRelatedLink(),
+                event.getColor()
         );
     }
 }

@@ -37,4 +37,23 @@ public class MailEvent {
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+    // 수동 생성 관련 필드
+    @Column(name = "is_manual")
+    private Boolean isManual; // 수동 생성 여부 (true: 수동, false: AI 추출)
+
+    @Column(columnDefinition = "TEXT")
+    private String description; // 일정 상세 설명
+
+    private String category; // 카테고리 (개발, 회의, 배포, 리뷰, 학습, 기타)
+
+    private String priority; // 우선순위 (HIGH, MEDIUM, LOW)
+
+    @Column(name = "related_link")
+    private String relatedLink; // 관련 링크 (GitHub, Jira 등)
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt; // 수정 일시
+
+    private String color; // 일정 색상 (HEX 코드, 예: #3182F6)
 }
