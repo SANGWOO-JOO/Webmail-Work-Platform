@@ -13,12 +13,22 @@
 
 POP3 프로토콜을 통해 메일을 수신하고, AI(LLM)를 활용하여 메일 분류/요약, 일정 추출, 답장 초안 생성 등의 스마트 기능을 제공합니다. 또한 맛집 지도, AI 음악 추천 등 사내 복지 기능도 함께 제공합니다.
 
+
+
 ### 개발 동기
 
 - 사내 메일 확인을 위해 별도 클라이언트를 열어야 하는 불편함 해소
 - 메일에서 일정/회의 정보를 수동으로 캘린더에 옮기는 반복 작업 자동화
 - 점심시간 맛집 결정에 소요되는 시간 단축
 - LLM 활용 실무 경험 축적
+
+
+
+## 시스템 아키텍처
+
+<p align="center">
+  <img src="./picture/webmail%20아키텍처.svg" alt="System Architecture" width="100%"/>
+</p>
 
 ---
 
@@ -48,7 +58,7 @@ POP3 프로토콜을 통해 메일을 수신하고, AI(LLM)를 활용하여 메�
 | 주변 맛집 검색 | 사내(도원빌딩) 기준 500m~1km 반경 맛집 표시 |
 | Kakao Map 연동 | 지도에 마커로 식당 위치 표시 |
 | 카테고리 필터 | 대분류/중분류/소분류 3단계 계층 필터 |
-| 좋아요/싫어요 | 팀원 평가 기능 |
+| 좋아요/싫어요 | 맛집 평가 기능 |
 | 즐겨찾기 | 자주 가는 맛집 저장 |
 | 방문 기록 | 방문 일시 및 메모 기록 |
 
@@ -66,7 +76,7 @@ POP3 프로토콜을 통해 메일을 수신하고, AI(LLM)를 활용하여 메�
 | 키워드 기반 추천 | 메일/일정에서 추출한 기술 키워드로 학습 자료 추천 |
 | 공식 문서 + 블로그 | 다양한 소스의 학습 자료 통합 제공 |
 
----
+
 
 ## 기술 스택
 
@@ -111,15 +121,7 @@ POP3 프로토콜을 통해 메일을 수신하고, AI(LLM)를 활용하여 메�
 | 공공데이터 공휴일 API | 공휴일 정보 |
 | Slack Bot API | 새 메일 알림 |
 
----
 
-## 시스템 아키텍처
-
-<p align="center">
-  <img src="./picture/webmail%20아키텍처.svg" alt="System Architecture" width="100%"/>
-</p>
-
----
 
 ## 프로젝트 구조
 
@@ -175,37 +177,7 @@ src/main/resources/
 - MariaDB 11.2+
 - Gradle 8.0+
 
-### 환경 변수 설정
 
-`.env` 파일 생성:
-
-```bash
-# Database
-MARIADB_ROOT_PASSWORD=<password>
-MARIADB_DATABASE=webmail
-MARIADB_USER=<user>
-MARIADB_PASSWORD=<password>
-
-# Security
-JASYPT_PASSWORD=<encryption-key>
-
-# Mail (POP3)
-MAIL_POP3_HOST=<pop3-server>
-MAIL_POP3_PORT=995
-
-# AI
-OPENAI_API_KEY=<openai-key>
-
-# Slack
-SLACK_BOT_TOKEN=xoxb-<token>
-
-# Spotify
-SPOTIFY_CLIENT_ID=<spotify-id>
-SPOTIFY_CLIENT_SECRET=<spotify-secret>
-
-# Kakao
-KAKAO_REST_API_KEY=<kakao-api-key>
-```
 
 ### 로컬 실행
 
@@ -234,32 +206,6 @@ docker-compose up -d
 docker-compose logs -f webmail
 ```
 
----
-
-## API 엔드포인트
-
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| POST | `/auth/login` | JWT 토큰 발급 |
-| POST | `/auth/refresh` | 토큰 갱신 |
-| POST | `/api/signup/request-code` | 회원가입 인증 코드 요청 |
-| POST | `/api/signup/verify` | 인증 코드 검증 |
-| GET | `/api/mail` | 메일 목록 조회 |
-| POST | `/api/mail/{id}/analyze` | AI 메일 분석 |
-| POST | `/api/mail/{id}/reply-draft` | AI 답장 초안 생성 |
-| GET | `/api/schedule` | 일정 목록 조회 |
-| POST | `/api/schedule` | 일정 생성 |
-| GET | `/map/api/restaurants` | 맛집 목록 조회 |
-| POST | `/map/api/restaurants/{id}/reaction` | 좋아요/싫어요 |
-| POST | `/music/api/recommend` | AI 음악 추천 |
-
-### API 문서
-
-애플리케이션 실행 후 Swagger UI에서 API 문서 확인:
-- **Swagger UI**: http://localhost:8080/swagger-ui/index.html
-- **OpenAPI Spec**: http://localhost:8080/v3/api-docs
-
----
 
 ## 화면 구성
 
@@ -273,7 +219,6 @@ docker-compose logs -f webmail
 | 맛집 지도 | `/map` | 주변 맛집 검색 |
 | 음악 | `/music` | AI 음악 추천 |
 
----
 
 ## 배포
 
@@ -286,33 +231,9 @@ docker-compose logs -f webmail
 3. AWS ECR에 push
 4. EC2에서 docker-compose로 배포
 
-### GitHub Secrets 설정
-
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `EC2_HOST`
-- `EC2_USER`
-- `EC2_SSH_KEY`
-
 ---
 
 ## 개발 기간
 
 - **시작일**: 2024년 8월
 - **현재 상태**: 개발 중
-
----
-
-## 향후 계획
-
-- [ ] 메일 답장 기능 (SMTP 발송)
-- [ ] 팀원 간 일정 공유
-- [ ] 모바일 반응형 UI 개선
-- [ ] Redis 캐싱 적용
-- [ ] 테스트 코드 보강
-
----
-
-## 라이선스
-
-Private Repository
