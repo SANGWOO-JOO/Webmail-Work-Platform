@@ -105,12 +105,6 @@ POP3 프로토콜을 통해 메일을 수신하고, AI(LLM)를 활용하여 메�
 | MariaDB 11.2 | 운영 데이터베이스 |
 | H2 | 개발/테스트용 인메모리 DB |
 
-### Infrastructure
-| 기술 | 용도 |
-|------|------|
-| Docker | 컨테이너 (Multi-stage build) |
-| GitHub Actions | CI/CD |
-| AWS EC2 + ECR | 클라우드 배포 |
 
 ### External APIs
 | API | 용도 |
@@ -220,20 +214,7 @@ docker-compose logs -f webmail
 | 음악 | `/music` | AI 음악 추천 |
 
 
-## 배포
-
-### GitHub Actions CI/CD
-
-`master` 브랜치에 push 시 자동 배포:
-
-1. Gradle 빌드
-2. Docker 이미지 빌드 (Multi-stage)
-3. AWS ECR에 push
-4. EC2에서 docker-compose로 배포
-
----
-
 ## 개발 기간
 
-- **시작일**: 2024년 8월
+- **시작일**: 2025년 9월
 - **현재 상태**: 개발 중
