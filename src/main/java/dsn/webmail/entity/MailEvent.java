@@ -3,18 +3,19 @@ package dsn.webmail.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "mail_event")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Data
 public class MailEvent {
 
     @Id
@@ -35,12 +36,17 @@ public class MailEvent {
 
     private Float confidence; // AI 신뢰도(0.0 ~ 1.0)
 
-    @CreatedDate
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     // 수동 생성 관련 필드
     @Column(name = "is_manual")
-    private Boolean isManual; // 수동 생성 여부 (true: 수동, false: AI 추출)
+    @Builder.Default
+    private Boolean isManual = false; // 수동 생성 여부 (true: 수동, false: AI 추출)
 
     @Column(columnDefinition = "TEXT")
     private String description; // 일정 상세 설명

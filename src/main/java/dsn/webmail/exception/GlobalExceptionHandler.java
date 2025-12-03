@@ -111,6 +111,8 @@ public class GlobalExceptionHandler {
             return "AUTH-006";
         } else if (message.contains("사용자를 찾을 수 없습니다")) {
             return "AUTH-007";
+        } else if (message.contains("이미 방문 기록")) {
+            return "MAP-001";
         }
         return "AUTH-999";
     }

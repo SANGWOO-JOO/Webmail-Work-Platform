@@ -58,6 +58,19 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public String createPasswordResetToken(String email) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + 600000); // 10분 유효
+
+        return Jwts.builder()
+                .subject(email)
+                .claim("type", "password_reset")
+                .issuedAt(now)
+                .expiration(validity)
+                .signWith(secretKey, Jwts.SIG.HS256)
+                .compact();
+    }
+
 
     /**
      * JWT에서 이메일 추출

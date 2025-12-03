@@ -52,4 +52,39 @@ public class AuthDtos {
     ) {
     }
 
+    // ===== 비밀번호 재설정 DTOs =====
+
+    @Schema(description = "인증코드 발송 요청")
+    public record SendCodeRequest(
+            @NotBlank @Email String email
+    ) {
+    }
+
+    @Schema(description = "인증코드 확인 요청")
+    public record VerifyCodeRequest(
+            @NotBlank @Email String email,
+            @NotBlank String code
+    ) {
+    }
+
+    @Schema(description = "비밀번호 재설정 요청")
+    public record ResetPasswordRequest(
+            @NotBlank @Email String email,
+            @NotBlank String resetToken,
+            @NotBlank String newPassword
+    ) {
+    }
+
+    @Schema(description = "비밀번호 재설정 응답")
+    public record PasswordResetResponse(
+            boolean success,
+            String message,
+            String resetToken
+    ) {
+        public PasswordResetResponse(boolean success, String message) {
+            this(success, message, null);
+        }
+    }
+
 }
+

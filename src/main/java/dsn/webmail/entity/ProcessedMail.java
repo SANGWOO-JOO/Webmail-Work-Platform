@@ -1,152 +1,57 @@
 package dsn.webmail.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "processed_mail",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"userId", "messageId"}),
-       indexes = {
-           @Index(name = "idx_processed_mail_user_id", columnList = "userId"),
-           @Index(name = "idx_processed_mail_message_id", columnList = "messageId"),
-           @Index(name = "idx_processed_mail_processed_at", columnList = "processedAt")
-       })
+@Table(name = "processed_mail", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id",
+                "messageId" }), indexes = {
+                                @Index(name = "idx_processed_mail_user_id", columnList = "user_id"),
+                                @Index(name = "idx_processed_mail_message_id", columnList = "messageId"),
+                                @Index(name = "idx_processed_mail_processed_at", columnList = "processedAt")
+                })
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProcessedMail {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(nullable = false)
-    private Long userId;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @Column(nullable = false, length = 255)
-    private String messageId;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "user_id", nullable = false)
+        private AppUser user;
 
-    @Column(nullable = false)
-    private LocalDateTime processedAt = LocalDateTime.now();
+        @Column(nullable = false, length = 255)
+        private String messageId;
 
-    @Column(length = 500)
-    private String subject;
+        @Column(nullable = false)
+        @Builder.Default
+        private LocalDateTime processedAt = LocalDateTime.now();
 
-    @Column(length = 200)
-    private String fromAddress;
+        @Column(length = 500)
+        private String subject;
 
-    @Column(columnDefinition = "LONGTEXT")
-    private String content;
+        @Column(length = 200)
+        private String fromAddress;
 
-    // LLM 분석 결과 필드
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private MailCategory category;
+        @Column(columnDefinition = "LONGTEXT")
+        private String content;
 
-    @Column(columnDefinition = "TEXT")
-    private String summary;
+        // LLM 분석 결과 필드
+        @Enumerated(EnumType.STRING)
+        @Column(length = 20)
+        private MailCategory category;
 
-    private LocalDateTime analyzedAt;
+        @Column(columnDefinition = "TEXT")
+        private String summary;
 
-    private Float categoryConfidence;
+        private LocalDateTime analyzedAt;
 
-    public ProcessedMail() {}
+        private Float categoryConfidence;
 
-    public ProcessedMail(Long userId, String messageId) {
-        this.userId = userId;
-        this.messageId = messageId;
-    }
-
-    public ProcessedMail(Long userId, String messageId, String subject, String fromAddress, String content) {
-        this.userId = userId;
-        this.messageId = messageId;
-        this.subject = subject;
-        this.fromAddress = fromAddress;
-        this.content = content;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getMessageId() {
-        return messageId;
-    }
-
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public LocalDateTime getProcessedAt() {
-        return processedAt;
-    }
-
-    public void setProcessedAt(LocalDateTime processedAt) {
-        this.processedAt = processedAt;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
-
-    public String getFromAddress() {
-        return fromAddress;
-    }
-
-    public void setFromAddress(String fromAddress) {
-        this.fromAddress = fromAddress;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public MailCategory getCategory() {
-        return category;
-    }
-
-    public void setCategory(MailCategory category) {
-        this.category = category;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
-
-    public LocalDateTime getAnalyzedAt() {
-        return analyzedAt;
-    }
-
-    public void setAnalyzedAt(LocalDateTime analyzedAt) {
-        this.analyzedAt = analyzedAt;
-    }
-
-    public Float getCategoryConfidence() {
-        return categoryConfidence;
-    }
-
-    public void setCategoryConfidence(Float categoryConfidence) {
-        this.categoryConfidence = categoryConfidence;
-    }
 }

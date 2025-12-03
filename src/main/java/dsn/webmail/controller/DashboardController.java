@@ -2,13 +2,12 @@ package dsn.webmail.controller;
 
 import dsn.webmail.dto.DashboardDtos.AccountInfoResponse;
 import dsn.webmail.dto.DashboardDtos.DashboardStatsResponse;
-import dsn.webmail.security.JwtTokenProvider;
 import dsn.webmail.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class DashboardController {
 
     private final DashboardService dashboardService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     // ========== View 엔드포인트 ==========
 
@@ -40,28 +38,22 @@ public class DashboardController {
 
     /**
      * 대시보드 통계 조회 API
-     * JWT 인증 필요
      */
     @GetMapping("/api/stats")
     @ResponseBody
     public ResponseEntity<DashboardStatsResponse> getStats(
-            @RequestHeader("Authorization") String authorization) {
-        String token = authorization.replace("Bearer ", "");
-        String email = jwtTokenProvider.getEmailFromToken(token);
+            @AuthenticationPrincipal String email) {
         DashboardStatsResponse stats = dashboardService.getDashboardStats(email);
         return ResponseEntity.ok(stats);
     }
 
     /**
      * 계정 정보 조회 API
-     * JWT 인증 필요
      */
     @GetMapping("/api/account-info")
     @ResponseBody
     public ResponseEntity<AccountInfoResponse> getAccountInfo(
-            @RequestHeader("Authorization") String authorization) {
-        String token = authorization.replace("Bearer ", "");
-        String email = jwtTokenProvider.getEmailFromToken(token);
+            @AuthenticationPrincipal String email) {
         AccountInfoResponse accountInfo = dashboardService.getAccountInfo(email);
         return ResponseEntity.ok(accountInfo);
     }

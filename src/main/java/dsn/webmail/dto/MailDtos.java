@@ -39,4 +39,18 @@ public class MailDtos {
             String summary,
             LocalDateTime analyzedAt
     ) {}
+
+    // 메일 답장 요청
+    public record MailReplyRequest(
+            String to,
+            String subject,
+            String body,
+            Long originalMailId
+    ) {}
+
+    // 메일 답장 응답
+    public record MailReplyResponse(
+            boolean success,
+            String message
+    ) {}
 }

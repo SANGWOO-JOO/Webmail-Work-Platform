@@ -5,13 +5,13 @@ import dsn.webmail.dto.ScheduleDtos.CreateEventRequest;
 import dsn.webmail.dto.ScheduleDtos.ScheduleEventResponse;
 import dsn.webmail.dto.ScheduleDtos.ScheduleListResponse;
 import dsn.webmail.dto.ScheduleDtos.UpdateEventRequest;
-import dsn.webmail.security.JwtTokenProvider;
 import dsn.webmail.service.HolidayService;
 import dsn.webmail.service.ScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +27,6 @@ public class ScheduleController {
 
     private final ScheduleService scheduleService;
     private final HolidayService holidayService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     // ========== View 엔드포인트 ==========
 
@@ -44,77 +43,62 @@ public class ScheduleController {
 
     /**
      * 월별 일정 목록 조회 API
-     * JWT 인증 필요
      */
     @GetMapping("/api/events")
     @ResponseBody
     public ResponseEntity<ScheduleListResponse> getEvents(
-            @RequestHeader("Authorization") String authorization,
+            @AuthenticationPrincipal String email,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month) {
-        String token = authorization.replace("Bearer ", "");
-        String email = jwtTokenProvider.getEmailFromToken(token);
         ScheduleListResponse events = scheduleService.getScheduleByMonth(email, year, month);
         return ResponseEntity.ok(events);
     }
 
     /**
      * 일정 상세 조회 API
-     * JWT 인증 필요
      */
     @GetMapping("/api/events/{id}")
     @ResponseBody
     public ResponseEntity<ScheduleEventResponse> getEventById(
-            @RequestHeader("Authorization") String authorization,
+            @AuthenticationPrincipal String email,
             @PathVariable Long id) {
-        String token = authorization.replace("Bearer ", "");
-        String email = jwtTokenProvider.getEmailFromToken(token);
         ScheduleEventResponse event = scheduleService.getScheduleById(email, id);
         return ResponseEntity.ok(event);
     }
 
     /**
      * 일정 생성 API
-     * JWT 인증 필요
      */
     @PostMapping("/api/events")
     @ResponseBody
     public ResponseEntity<ScheduleEventResponse> createEvent(
-            @RequestHeader("Authorization") String authorization,
+            @AuthenticationPrincipal String email,
             @Valid @RequestBody CreateEventRequest request) {
-        String token = authorization.replace("Bearer ", "");
-        String email = jwtTokenProvider.getEmailFromToken(token);
         ScheduleEventResponse event = scheduleService.createSchedule(email, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(event);
     }
 
     /**
      * 일정 수정 API
-     * JWT 인증 필요
      */
     @PutMapping("/api/events/{id}")
     @ResponseBody
     public ResponseEntity<ScheduleEventResponse> updateEvent(
-            @RequestHeader("Authorization") String authorization,
+            @AuthenticationPrincipal String email,
             @PathVariable Long id,
             @Valid @RequestBody UpdateEventRequest request) {
-        String token = authorization.replace("Bearer ", "");
-        String email = jwtTokenProvider.getEmailFromToken(token);
         ScheduleEventResponse event = scheduleService.updateSchedule(email, id, request);
         return ResponseEntity.ok(event);
     }
 
     /**
      * 일정 삭제 API
-     * JWT 인증 필요
      */
     @DeleteMapping("/api/events/{id}")
     @ResponseBody
     public ResponseEntity<Void> deleteEvent(
-            @RequestHeader("Authorization") String authorization,
+            @AuthenticationPrincipal String email,
             @PathVariable Long id) {
-        String token = authorization.replace("Bearer ", "");
-        String email = jwtTokenProvider.getEmailFromToken(token);
         scheduleService.deleteSchedule(email, id);
         return ResponseEntity.noContent().build();
     }

@@ -19,6 +19,7 @@ public class MailAnalyzerService {
 
     private final MailAnalysisAiService mailAnalysisAiService;
     private final ProcessedMailRepository processedMailRepository;
+    private final MailKeywordExtractorService mailKeywordExtractorService;
 
     /**
      * 메일 분석 (비동기)
@@ -64,6 +65,13 @@ public class MailAnalyzerService {
 
             log.info("메일 분석 완료: id={}, category={}, confidence={}",
                     mail.getId(), result.category(), result.confidence());
+
+            // 기술 키워드 추출 (학습 자료 추천용)
+            try {
+                mailKeywordExtractorService.extractAndSaveKeywords(mail);
+            } catch (Exception keywordEx) {
+                log.warn("키워드 추출 실패 (분석은 성공): id={}, error={}", mail.getId(), keywordEx.getMessage());
+            }
 
         } catch (Exception e) {
             log.error("메일 분석 오류: id={}, error={}", mail.getId(), e.getMessage());

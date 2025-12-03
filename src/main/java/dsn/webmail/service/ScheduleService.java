@@ -7,6 +7,7 @@ import dsn.webmail.dto.ScheduleDtos.UpdateEventRequest;
 import dsn.webmail.entity.AppUser;
 import dsn.webmail.entity.MailEvent;
 import dsn.webmail.repository.AppUserRepository;
+import dsn.webmail.repository.EventKeywordRepository;
 import dsn.webmail.repository.MailEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,8 @@ public class ScheduleService {
 
     private final AppUserRepository appUserRepository;
     private final MailEventRepository mailEventRepository;
+    private final EventKeywordRepository eventKeywordRepository;
+    private final EventKeywordExtractorService eventKeywordExtractorService;
 
     @Transactional(readOnly = true)
     public ScheduleListResponse getScheduleByMonth(String email, Integer year, Integer month) {
@@ -71,6 +74,9 @@ public class ScheduleService {
         MailEvent event = mailEventRepository.findByIdAndUserId(eventId, user.getId())
                 .orElseThrow(() -> new RuntimeException("일정을 찾을 수 없습니다: " + eventId));
 
+        // 연결된 EventKeyword 먼저 삭제
+        eventKeywordRepository.deleteByEvent(event);
+
         mailEventRepository.delete(event);
         log.info("일정 삭제: userId={}, eventId={}", user.getId(), eventId);
     }
@@ -99,6 +105,13 @@ public class ScheduleService {
         MailEvent savedEvent = mailEventRepository.save(event);
         log.info("일정 생성: userId={}, eventId={}, title={}", user.getId(), savedEvent.getId(), savedEvent.getTitle());
 
+        // 기술 키워드 추출 (비동기적으로 처리)
+        try {
+            eventKeywordExtractorService.extractAndSaveKeywords(savedEvent);
+        } catch (Exception e) {
+            log.warn("일정 키워드 추출 실패: eventId={}, error={}", savedEvent.getId(), e.getMessage());
+        }
+
         return toEventResponse(savedEvent);
     }
 
@@ -124,6 +137,13 @@ public class ScheduleService {
 
         MailEvent updatedEvent = mailEventRepository.save(event);
         log.info("일정 수정: userId={}, eventId={}, title={}", user.getId(), updatedEvent.getId(), updatedEvent.getTitle());
+
+        // 기술 키워드 재추출
+        try {
+            eventKeywordExtractorService.extractAndSaveKeywords(updatedEvent);
+        } catch (Exception e) {
+            log.warn("일정 키워드 추출 실패: eventId={}, error={}", updatedEvent.getId(), e.getMessage());
+        }
 
         return toEventResponse(updatedEvent);
     }

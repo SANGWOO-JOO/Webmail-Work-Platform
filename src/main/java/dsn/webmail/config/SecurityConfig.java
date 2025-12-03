@@ -60,9 +60,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/refresh",
+                                "/api/auth/password-reset/**",
                                 "/api/signup/**",
                                 "/api/test/public",
-                                "/api/test/create-test-user"
+                                "/api/test/create-test-user",
+                                "/map/api/sync",              // 관리자용 수동 동기화 (TODO: 추후 ADMIN 권한으로 변경)
+                                "/map/api/migrate-categories", // 마이그레이션용 (일회성)
+                                "/map/api/categories"          // 카테고리 목록 (공개)
                         ).permitAll()
 
                         // Swagger UI
@@ -78,9 +82,13 @@ public class SecurityConfig {
                                 "/index",
                                 "/login",
                                 "/signup/**",
-                                "/dashboard/**",  // 대시보드 HTML 로드 허용 (auth-guard.js가 클라이언트에서 검증)
-                                "/schedule/**",   // 일정 HTML 로드 허용 (auth-guard.js가 클라이언트에서 검증)
-                                "/music/**",      // 음악 HTML 로드 허용 (auth-guard.js가 클라이언트에서 검증)
+                                "/dashboard",     // 대시보드 HTML 페이지만 허용
+                                "/schedule",      // 일정 HTML 페이지만 허용
+                                "/dashboard/mail",// 대시보드 메일  페이지만 허용
+                                "/music",         // 음악 HTML 페이지만 허용
+                                "/study",         // 학습 HTML 페이지만 허용
+                                "/map",           // 지도 HTML 페이지만 허용
+                                "/setup",         // 설정 HTML 페이지만 허용
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"

@@ -425,6 +425,18 @@
                 <i class="fas fa-music"></i>
                 <span>음악</span>
             </a>
+            <a href="/study" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span>학습</span>
+            </a>
+            <a href="/map" class="nav-item">
+                <i class="fas fa-utensils"></i>
+                <span>주변 맛집</span>
+            </a>
+            <a href="/setup" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>설정</span>
+            </a>
         </nav>
     </aside>
 
@@ -527,18 +539,29 @@
 <div class="modal-overlay" id="replyDraftModal">
     <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
-            <h3 class="modal-title">생성된 답장 초안</h3>
+            <h3 class="modal-title">답장 작성</h3>
             <button class="modal-close" onclick="closeReplyDraft()">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="reply-draft-box" id="replyDraftContent"></div>
+            <div style="margin-bottom: 12px;">
+                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">수신자</label>
+                <input type="text" id="replyTo" readonly style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5;">
+            </div>
+            <div style="margin-bottom: 12px;">
+                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">제목</label>
+                <input type="text" id="replySubject" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">내용</label>
+                <textarea id="replyDraftContent" style="width: 100%; height: 200px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; font-family: inherit;"></textarea>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn-secondary" onclick="openReplyOptions()">
                 <i class="fas fa-redo"></i> 다시 생성
             </button>
-            <button class="btn-primary" onclick="copyReplyDraft()">
-                <i class="fas fa-copy"></i> 복사하기
+            <button class="btn-primary" id="sendReplyBtn" onclick="sendReply()">
+                <i class="fas fa-paper-plane"></i> 답장하기
             </button>
         </div>
     </div>
@@ -554,6 +577,8 @@
     let selectedTone = 'NEUTRAL';
     let selectedReplyType = 'ACKNOWLEDGE';
     let currentReplyDraft = '';
+    let currentMailFrom = '';
+    let currentMailSubject = '';
 
     function handleLogout(event) {
         event.preventDefault();
@@ -677,6 +702,10 @@
             if (!response.ok) throw new Error('Failed to load mail detail');
 
             const mail = await response.json();
+
+            // 답장용 정보 저장
+            currentMailFrom = mail.fromAddress;
+            currentMailSubject = mail.subject;
 
             document.getElementById('modalTitle').textContent = mail.subject || '(제목 없음)';
             document.getElementById('modalBody').innerHTML = `
@@ -827,7 +856,10 @@
             currentReplyDraft = data.replyDraft;
 
             closeReplyOptions();
-            document.getElementById('replyDraftContent').textContent = currentReplyDraft;
+            // 모달에 데이터 설정
+            document.getElementById('replyTo').value = currentMailFrom;
+            document.getElementById('replySubject').value = currentMailSubject.startsWith('Re:') ? currentMailSubject : 'Re: ' + currentMailSubject;
+            document.getElementById('replyDraftContent').value = currentReplyDraft;
             document.getElementById('replyDraftModal').classList.add('active');
 
         } catch (error) {
@@ -843,20 +875,51 @@
         document.getElementById('replyDraftModal').classList.remove('active');
     }
 
-    async function copyReplyDraft() {
+    async function sendReply() {
+        const accessToken = localStorage.getItem('accessToken');
+        const sendBtn = document.getElementById('sendReplyBtn');
+
+        const to = document.getElementById('replyTo').value;
+        const subject = document.getElementById('replySubject').value;
+        const body = document.getElementById('replyDraftContent').value;
+
+        if (!to || !subject || !body) {
+            alert('모든 필드를 입력해주세요.');
+            return;
+        }
+
         try {
-            await navigator.clipboard.writeText(currentReplyDraft);
-            alert('클립보드에 복사되었습니다.');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 발송 중...';
+
+            const response = await fetch('/dashboard/mail/api/reply', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    to: to,
+                    subject: subject,
+                    body: body,
+                    originalMailId: selectedMailId
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('메일이 성공적으로 발송되었습니다.');
+                closeReplyDraft();
+            } else {
+                alert(result.message || '메일 발송에 실패했습니다.');
+            }
         } catch (error) {
-            console.error('Failed to copy:', error);
-            // Fallback for older browsers
-            const textarea = document.createElement('textarea');
-            textarea.value = currentReplyDraft;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert('클립보드에 복사되었습니다.');
+            console.error('Failed to send reply:', error);
+            alert('메일 발송 중 오류가 발생했습니다.');
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 답장하기';
         }
     }
 

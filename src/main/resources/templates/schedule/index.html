@@ -758,6 +758,18 @@
                 <i class="fas fa-music"></i>
                 <span>음악</span>
             </a>
+            <a href="/study" class="nav-item">
+                <i class="fas fa-book"></i>
+                <span>학습</span>
+            </a>
+            <a href="/map" class="nav-item">
+                <i class="fas fa-utensils"></i>
+                <span>주변 맛집</span>
+            </a>
+            <a href="/setup" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>설정</span>
+            </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -905,8 +917,8 @@
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeFormModal()">취소</button>
-            <button class="btn-save" onclick="saveEvent(event)">
+            <button type="button" class="btn-cancel" onclick="closeFormModal()">취소</button>
+            <button type="button" class="btn-save" onclick="saveEvent(event)">
                 <i class="fas fa-save"></i> 저장
             </button>
         </div>
@@ -1334,6 +1346,9 @@
         if (!selectedEventData) return;
 
         isEditMode = true;
+        // Save the event ID before closing the detail modal
+        const eventIdToEdit = selectedEventId;
+        console.log('Opening edit modal - selectedEventId:', selectedEventId, 'isEditMode:', isEditMode);
         document.getElementById('formModalTitle').textContent = '일정 수정';
 
         // Fill form with current data
@@ -1359,6 +1374,8 @@
 
         // Close detail modal and open form modal
         closeModal();
+        // Restore the event ID after closeModal resets it
+        selectedEventId = eventIdToEdit;
         document.getElementById('formModal').classList.add('active');
     }
 
@@ -1394,10 +1411,14 @@
 
         const accessToken = localStorage.getItem('accessToken');
 
+        // Debug logging
+        console.log('Save Event - isEditMode:', isEditMode, 'selectedEventId:', selectedEventId);
+
         try {
             let response;
             if (isEditMode && selectedEventId) {
                 // Update
+                console.log('Updating event:', selectedEventId);
                 response = await fetch(`/schedule/api/events/${selectedEventId}`, {
                     method: 'PUT',
                     headers: {
@@ -1408,6 +1429,7 @@
                 });
             } else {
                 // Create
+                console.log('Creating new event');
                 response = await fetch('/schedule/api/events', {
                     method: 'POST',
                     headers: {

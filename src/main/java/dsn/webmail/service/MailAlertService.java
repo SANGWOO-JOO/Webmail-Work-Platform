@@ -28,11 +28,11 @@ public class MailAlertService {
     private final MailAnalyzerService mailAnalyzerService;
 
     public MailAlertService(MailReceiver mailReceiver,
-                            SlackBotClient slackBotClient,
-                            ProcessedMailRepository processedMailRepo,
-                            PasswordCipher passwordCipher,
-                            EventExtractionService eventExtractionService,
-                            MailAnalyzerService mailAnalyzerService) {
+            SlackBotClient slackBotClient,
+            ProcessedMailRepository processedMailRepo,
+            PasswordCipher passwordCipher,
+            EventExtractionService eventExtractionService,
+            MailAnalyzerService mailAnalyzerService) {
         this.mailReceiver = mailReceiver;
         this.slackBotClient = slackBotClient;
         this.processedMailRepo = processedMailRepo;
@@ -59,7 +59,7 @@ public class MailAlertService {
 
             if (!processedMailRepo.existsByUserIdAndMessageId(user.getId(), mail.messageId())) {
                 sendSlackNotification(user, mail);
-                saveProcessedMail(user.getId(), mail);
+                saveProcessedMail(user, mail);
 
                 // 이벤트 추출 (AI 호출) - 실패해도 메일 처리는 계속
                 extractEvent(user, mail);
@@ -76,7 +76,14 @@ public class MailAlertService {
     }
 
     private void sendSlackNotification(AppUser user, MailSummary mail) {
-        if (user.getSlackUserId() == null) {
+        // 1. 알람 수신 설정 확인
+        if (!Boolean.TRUE.equals(user.getSlackNotificationEnabled())) {
+            log.debug("Slack notification disabled for user: {}, skipping", user.getEmail());
+            return;
+        }
+
+        // 2. Slack ID 확인
+        if (user.getSlackUserId() == null || user.getSlackUserId().isBlank()) {
             log.warn("No Slack User ID for user: {}, skipping notification", user.getEmail());
             return;
         }
@@ -99,21 +106,20 @@ public class MailAlertService {
         String formattedSize = formatFileSize(mail.size());
 
         return String.format("""
-                        📬 *새 메일 도착*
+                📬 *새 메일 도착*
 
-                        *제목:* %s
-                        *발신자:* %s
-                        *수신:* %s | 크기: %s
+                *제목:* %s
+                *발신자:* %s
+                *수신:* %s | 크기: %s
 
-                        ───────────────────
-                        받은메일함: %s
-                        """,
+                ───────────────────
+                받은메일함: %s
+                """,
                 mail.subject(),
                 mail.fromAddress(),
                 receivedTime,
                 formattedSize,
-                email
-        );
+                email);
     }
 
     private String formatFileSize(int bytes) {
@@ -126,14 +132,14 @@ public class MailAlertService {
         }
     }
 
-    private void saveProcessedMail(Long userId, MailSummary mail) {
-        ProcessedMail processed = new ProcessedMail(
-                userId,
-                mail.messageId(),
-                mail.subject(),
-                mail.fromAddress(),
-                mail.content()
-        );
+    private void saveProcessedMail(AppUser user, MailSummary mail) {
+        ProcessedMail processed = ProcessedMail.builder()
+                .user(user)
+                .messageId(mail.messageId())
+                .subject(mail.subject())
+                .fromAddress(mail.fromAddress())
+                .content(mail.content())
+                .build();
         processedMailRepo.save(processed);
         log.debug("Saved processed mail record: {}", mail.messageId());
 

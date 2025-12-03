@@ -38,7 +38,6 @@ out/
 
 ### Custom ###
 docs/
-.claude/
 src/main/resources/application.yml
 src/main/resources/application.properties
 src/main/resources/application-local.yml
@@ -47,3 +46,20 @@ src/main/resources/application-local.yml
 .env
 .env.local
 .env.*.local
+.env.example
+.env.prod.example
+
+### Docker ###
+Dockerfile
+docker-compose.yaml
+docker-compose.prod.yaml
+
+### Documentation ###
+DASHBOARD_TEST.md
+DEPLOYMENT.md
+
+### Claude ###
+.claude/
+
+### Git ###
+.gitattributes

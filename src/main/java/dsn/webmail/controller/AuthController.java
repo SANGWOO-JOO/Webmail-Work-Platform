@@ -42,4 +42,31 @@ public class AuthController {
         // 향후: Refresh Token을 DB에 저장하고 여기서 삭제 가능
         return ResponseEntity.ok().build();
     }
+
+    // ===== 비밀번호 재설정 =====
+
+    @Operation(summary = "인증코드 발송", description = "비밀번호 재설정을 위한 인증코드를 이메일로 발송합니다.")
+    @PostMapping("/password-reset/send-code")
+    public ResponseEntity<PasswordResetResponse> sendResetCode(
+            @Valid @RequestBody SendCodeRequest request) {
+        PasswordResetResponse response = authService.sendPasswordResetCode(request.email());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "인증코드 확인", description = "발송된 인증코드를 확인합니다.")
+    @PostMapping("/password-reset/verify-code")
+    public ResponseEntity<PasswordResetResponse> verifyResetCode(
+            @Valid @RequestBody VerifyCodeRequest request) {
+        PasswordResetResponse response = authService.verifyResetCode(request.email(), request.code());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "비밀번호 재설정", description = "새 비밀번호를 설정합니다.")
+    @PostMapping("/password-reset/reset")
+    public ResponseEntity<PasswordResetResponse> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        PasswordResetResponse response = authService.resetPassword(
+                request.email(), request.resetToken(), request.newPassword());
+        return ResponseEntity.ok(response);
+    }
 }
